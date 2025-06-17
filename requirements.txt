@@ -1,0 +1,91 @@
+# AI Text Feature Extractor - Updated Requirements
+# Core dependencies for the enhanced version with preprocessing and analysis
+
+# Essential NLP and text processing
+spacy>=3.4.0
+numpy>=1.21.0
+scipy>=1.7.0
+pandas>=1.3.0
+
+# Text analysis libraries
+textblob>=0.17.1
+textstat>=0.7.3
+nltk>=3.8
+
+# Visualization and analysis
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# File processing
+python-docx>=0.8.11
+PyPDF2>=2.10.0
+openpyxl>=3.0.9
+
+# Optional but recommended for enhanced analysis
+scikit-learn>=1.0.0  # For advanced statistical analysis, PCA, t-SNE
+plotly>=5.0.0        # For interactive visualizations (future enhancement)
+
+# Development and testing (optional)
+pytest>=6.0.0
+pytest-cov>=3.0.0
+
+# Data processing utilities
+unicodedata2>=14.0.0  # For robust Unicode normalization
+chardet>=4.0.0        # For character encoding detection
+
+# System and performance
+psutil>=5.8.0         # For system resource monitoring
+tqdm>=4.64.0          # For progress bars in console mode
+
+# Enhanced file format support (optional)
+xlrd>=2.0.0           # For older Excel files
+python-magic>=0.4.24  # For file type detection (Linux/Mac)
+
+# Statistical analysis enhancements (optional)
+statsmodels>=0.13.0   # For advanced statistical tests
+pingouin>=0.5.0       # For effect size calculations
+
+# Installation Notes:
+# 1. Install spaCy model after installing spacy:
+#    python -m spacy download en_core_web_sm
+#
+# 2. Download NLTK data (will be done automatically on first run):
+#    python -c "import nltk; nltk.download('stopwords')"
+#
+# 3. For Windows users, you may need Visual C++ Build Tools for some packages
+#
+# 4. Optional packages can be skipped if you only need basic functionality:
+#    - scikit-learn: Advanced analysis features
+#    - plotly: Interactive visualizations
+#    - statsmodels, pingouin: Advanced statistical tests
+#    - python-magic: Better file type detection
+#
+# 5. Minimum Python version: 3.8+
+
+# Core packages (required)
+# spacy
+# numpy
+# scipy
+# pandas
+# textblob
+# textstat
+# matplotlib
+# seaborn
+# python-docx
+# PyPDF2
+
+# Enhanced packages (recommended)
+# scikit-learn
+# nltk
+# psutil
+# unicodedata2
+
+# Optional packages (for full feature set)
+# plotly
+# statsmodels
+# pingouin
+# python-magic
+# openpyxl
+# xlrd
+# chardet
+# tqdm

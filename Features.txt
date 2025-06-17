@@ -1,0 +1,19 @@
+📊 Feature Count:
+The application now extracts 100+ features across these categories:
+
+Sentence Structure (6 features)
+POS Frequencies (5 features)
+Passive Voice (2 features)
+Sentiment (2 features)
+Stop Words (3 features)
+N-grams (3 features)
+Syntactic Complexity (3 features)
+Word Patterns (4 features)
+Discourse Markers (5 features)
+Lexical Diversity (5 features)
+Punctuation (20+ features)
+Error Analysis (8 features)
+Readability (6 features)
+Topological (3 features)
+And many more specialized features...
+

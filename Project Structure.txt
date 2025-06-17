@@ -1,0 +1,38 @@
+Project/
+├── .gitignore
+├── config.py
+├── main.py
+├── README.md
+├── requirements.txt
+├── setup_clean.py
+├── workflow.py
+├── core/
+│   ├── __init__.py
+│   ├── nlp_utils.py
+│   ├── validation.py
+│   ├── file_processing.py
+│   └── preprocessing.py
+├── features/
+│   ├── __init__.py
+│   ├── base.py
+│   ├── linguistic.py
+│   ├── lexical.py
+│   ├── syntactic.py
+│   ├── structural.py
+│   └── topological.py
+├── analysis/
+│   ├── __init__.py
+│   ├── statistical_analysis.py
+│   ├── visualization.py
+│   ├── reports.py
+│   └── utils.py
+├── gui/
+│   ├── __init__.py
+│   ├── main_window.py
+│   ├── file_manager.py
+│   ├── progress.py
+│   └── analysis_window.py
+└── exports/                     # 🆕 NEW - Output directory for plots/reports
+    ├── plots/
+    ├── reports/
+    └── data/
