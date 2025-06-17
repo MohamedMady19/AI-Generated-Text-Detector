@@ -3,6 +3,8 @@ Automated report generation for AI text analysis results.
 
 This module creates comprehensive reports including statistical findings,
 visualizations, and actionable insights.
+
+✅ CROSS-PLATFORM FIXES: Enhanced path handling, robust file operations, platform-aware formatting
 """
 
 import logging
@@ -12,7 +14,25 @@ from typing import Dict, List, Optional, Any, Tuple
 from pathlib import Path
 from datetime import datetime
 import json
+import platform
+import sys
 from dataclasses import dataclass
+
+# Import cross-platform utilities
+try:
+    from config import ensure_directory, get_safe_path, IS_WINDOWS, IS_LINUX, IS_MACOS
+except ImportError:
+    # Fallback implementations
+    def ensure_directory(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
+        return Path(path)
+    
+    def get_safe_path(path_str):
+        return Path(path_str).resolve()
+    
+    IS_WINDOWS = platform.system() == 'Windows'
+    IS_LINUX = platform.system() == 'Linux'
+    IS_MACOS = platform.system() == 'Darwin'
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +48,7 @@ class ReportSection:
 
 
 class AnalysisReportGenerator:
-    """Generate comprehensive analysis reports."""
+    """Generate comprehensive analysis reports with cross-platform compatibility."""
     
     def __init__(self, output_dir: str = "exports/reports"):
         """
@@ -37,9 +57,24 @@ class AnalysisReportGenerator:
         Args:
             output_dir: Directory to save reports
         """
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        # 🚀 CROSS-PLATFORM: Use pathlib for robust path handling
+        self.output_dir = get_safe_path(output_dir)
+        ensure_directory(self.output_dir)
+        
+        # Platform-aware timestamp formatting
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Platform information for report context
+        self.platform_info = {
+            'system': platform.system(),
+            'python_version': sys.version,
+            'is_windows': IS_WINDOWS,
+            'is_linux': IS_LINUX,
+            'is_macos': IS_MACOS
+        }
+        
+        logger.info(f"Report generator initialized on {self.platform_info['system']}")
+        logger.info(f"Output directory: {self.output_dir}")
     
     def generate_executive_summary(self, analysis_results: Dict[str, Any]) -> str:
         """
@@ -62,18 +97,19 @@ class AnalysisReportGenerator:
             features_analyzed = summary.get('features_analyzed', 0)
             significant_features = summary.get('significant_features', 0)
             
-            summary_parts.append(f"""
-**EXECUTIVE SUMMARY**
-
-This analysis examined {total_samples:,} text samples ({ai_samples:,} AI-generated, {human_samples:,} human-written) 
-across {features_analyzed} linguistic features to identify distinguishing characteristics between 
-AI-generated and human-written text.
-
-**KEY FINDINGS:**
-• {significant_features} out of {features_analyzed} features show statistically significant differences
-• Success rate in feature discrimination: {(significant_features/features_analyzed)*100:.1f}%
-• Sample distribution: {(ai_samples/total_samples)*100:.1f}% AI, {(human_samples/total_samples)*100:.1f}% Human
-            """)
+            # 🚀 CROSS-PLATFORM: Safe string formatting without f-string backslashes
+            summary_text = (
+                "**EXECUTIVE SUMMARY**\n\n"
+                f"This analysis examined {total_samples:,} text samples "
+                f"({ai_samples:,} AI-generated, {human_samples:,} human-written) "
+                f"across {features_analyzed} linguistic features to identify distinguishing characteristics between "
+                "AI-generated and human-written text.\n\n"
+                "**KEY FINDINGS:**\n"
+                f"• {significant_features} out of {features_analyzed} features show statistically significant differences\n"
+                f"• Success rate in feature discrimination: {(significant_features/features_analyzed)*100:.1f}%\n"
+                f"• Sample distribution: {(ai_samples/total_samples)*100:.1f}% AI, {(human_samples/total_samples)*100:.1f}% Human"
+            )
+            summary_parts.append(summary_text)
         
         # Statistical significance findings
         if 'statistical_tests' in analysis_results:
@@ -89,15 +125,23 @@ AI-generated and human-written text.
                         medium_effect_features.append((feature, result.effect_size))
             
             if high_effect_features:
+                features_text = "\n".join([
+                    f"• {feature}: Cohen's d = {effect:.3f}" 
+                    for feature, effect in high_effect_features[:5]
+                ])
                 summary_parts.append(f"""
 **STRONGEST DISCRIMINATING FEATURES (Large Effect Size):**
-{chr(10).join([f'• {feature}: Cohen\'s d = {effect:.3f}' for feature, effect in high_effect_features[:5]])}
+{features_text}
                 """)
             
             if medium_effect_features:
+                features_text = "\n".join([
+                    f"• {feature}: Cohen's d = {effect:.3f}" 
+                    for feature, effect in medium_effect_features[:5]
+                ])
                 summary_parts.append(f"""
 **MODERATE DISCRIMINATING FEATURES (Medium Effect Size):**
-{chr(10).join([f'• {feature}: Cohen\'s d = {effect:.3f}' for feature, effect in medium_effect_features[:5]])}
+{features_text}
                 """)
         
         # Feature importance insights
@@ -105,9 +149,13 @@ AI-generated and human-written text.
             importance = analysis_results['feature_importance']
             if 'correlation' in importance:
                 top_important = importance['correlation'].head(5)
+                features_text = "\n".join([
+                    f"• {feature}: {score:.3f}" 
+                    for feature, score in top_important.items()
+                ])
                 summary_parts.append(f"""
 **MOST IMPORTANT FEATURES (by correlation):**
-{chr(10).join([f'• {feature}: {score:.3f}' for feature, score in top_important.items()])}
+{features_text}
                 """)
         
         # Source comparison insights
@@ -116,14 +164,21 @@ AI-generated and human-written text.
             source_counts = analysis_results['summary'].get('source_counts', {})
             
             if len(sources) > 1:
+                sources_list = ', '.join(sources)
+                max_source = max(source_counts.keys(), key=lambda k: source_counts[k])
+                max_count = max(source_counts.values())
+                
                 summary_parts.append(f"""
 **SOURCE COMPARISON:**
-• Analyzed {len(sources)} different sources: {', '.join(sources)}
-• Largest source: {max(source_counts.keys(), key=lambda k: source_counts[k])} ({max(source_counts.values())} samples)
+• Analyzed {len(sources)} different sources: {sources_list}
+• Largest source: {max_source} ({max_count} samples)
 • Source diversity provides robust comparison across AI systems
                 """)
         
-        # Recommendations
+        # Recommendations with platform info
+        platform_text = f" (Generated on {self.platform_info['system']})"
+        current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+        
         summary_parts.append(f"""
 **RECOMMENDATIONS:**
 • Focus on features with large effect sizes for AI detection systems
@@ -131,7 +186,7 @@ AI-generated and human-written text.
 • Validate findings on additional datasets from different domains
 • Monitor feature stability across different AI model versions
 
-**REPORT GENERATED:** {datetime.now().strftime("%B %d, %Y at %I:%M %p")}
+**REPORT GENERATED:** {current_time}{platform_text}
         """)
         
         return "\n".join(summary_parts)
@@ -151,6 +206,7 @@ AI-generated and human-written text.
 - Total features tested: {total_tests}
 - Statistically significant features: {significant_tests} ({(significant_tests/total_tests)*100:.1f}%)
 - Significance level: α = 0.05
+- Platform: {self.platform_info['system']}
 
 ### Effect Size Distribution
 
@@ -295,34 +351,40 @@ Features that rank highly across multiple importance methods are likely the most
         feature_columns = [col for col in data.columns 
                           if col not in ['paragraph', 'is_AI', 'source']]
         
+        current_year = datetime.now().strftime("%Y")
+        
         content_parts.append(f"""
 ## Data Quality and Composition
 
 ### Dataset Overview
 - **Total samples**: {total_samples:,}
 - **Features analyzed**: {len(feature_columns)}
-- **Data collection period**: {datetime.now().strftime("%Y")}
+- **Data collection period**: {current_year}
+- **Analysis platform**: {self.platform_info['system']}
         """)
         
         # Label distribution
         if 'is_AI' in data.columns:
             ai_count = len(data[data['is_AI'] == 1])
             human_count = len(data[data['is_AI'] == 0])
+            balance_ratio = min(ai_count, human_count) / max(ai_count, human_count) if max(ai_count, human_count) > 0 else 0
+            
             content_parts.append(f"""
 ### AI vs Human Distribution
 - **AI-generated texts**: {ai_count:,} ({(ai_count/total_samples)*100:.1f}%)
 - **Human-written texts**: {human_count:,} ({(human_count/total_samples)*100:.1f}%)
-- **Balance ratio**: {min(ai_count, human_count) / max(ai_count, human_count):.2f}
+- **Balance ratio**: {balance_ratio:.2f}
             """)
         
         # Source distribution
         if 'source' in data.columns:
             source_counts = data['source'].value_counts()
-            content_parts.append(f"""
+            content_parts.append("""
 ### Source Distribution
             """)
             for source, count in source_counts.items():
-                content_parts.append(f"- **{source}**: {count:,} samples ({(count/total_samples)*100:.1f}%)")
+                percentage = (count/total_samples)*100
+                content_parts.append(f"- **{source}**: {count:,} samples ({percentage:.1f}%)")
         
         # Missing data analysis
         missing_data = {}
@@ -332,7 +394,7 @@ Features that rank highly across multiple importance methods are likely the most
                 missing_data[col] = missing_count
         
         if missing_data:
-            content_parts.append(f"""
+            content_parts.append("""
 ### Missing Data Summary
 Features with missing values:
             """)
@@ -390,18 +452,43 @@ Features with missing values:
             tests = analysis_results['statistical_tests']
             significant_count = sum(1 for result in tests.values() if result.significant)
             total_count = len(tests)
+            success_rate = (significant_count/total_count)*100 if total_count > 0 else 0
             
             content_parts.append(f"""
 1. **Feature Discrimination**: {significant_count} out of {total_count} features 
-   ({(significant_count/total_count)*100:.1f}%) show statistically significant differences 
+   ({success_rate:.1f}%) show statistically significant differences 
    between AI and human text.
 
 2. **Effect Sizes**: Multiple features demonstrate large practical differences, 
    suggesting robust distinguishability between AI and human writing patterns.
             """)
         
+        # Platform-specific considerations
+        platform_specific = ""
+        if IS_LINUX:
+            platform_specific = """
+**Linux Platform Considerations:**
+- Enhanced compatibility with Unix-style text processing
+- Optimized for command-line integration and batch processing
+- Suitable for server-side deployment and automation
+"""
+        elif IS_WINDOWS:
+            platform_specific = """
+**Windows Platform Considerations:**
+- Optimized for desktop application deployment
+- Compatible with Windows-specific file systems and encoding
+- Suitable for interactive analysis and GUI applications
+"""
+        elif IS_MACOS:
+            platform_specific = """
+**macOS Platform Considerations:**
+- Optimized for macOS development environments
+- Compatible with Unix utilities and frameworks
+- Suitable for research and development workflows
+"""
+        
         # Practical implications
-        content_parts.append("""
+        content_parts.append(f"""
 ### Practical Implications
 
 **For AI Detection Systems:**
@@ -418,6 +505,8 @@ Features with missing values:
 - These findings provide baseline measurements for future comparative studies
 - Feature importance rankings guide selection of variables for new analyses
 - Statistical significance provides confidence in observed differences
+
+{platform_specific}
         """)
         
         # Recommendations
@@ -448,6 +537,7 @@ Features with missing values:
 - **Temporal Validity**: AI capabilities evolve rapidly; regular re-analysis needed
 - **Feature Interdependence**: Some features may be correlated; consider multicollinearity
 - **Sample Size**: Ensure adequate samples for each source when comparing AI systems
+- **Platform Dependencies**: Results may vary slightly across different operating systems
         """)
         
         return ReportSection(
@@ -458,7 +548,7 @@ Features with missing values:
     
     def save_report(self, report_content: str, filename: str = None) -> str:
         """
-        Save report to file.
+        Save report to file with cross-platform compatibility.
         
         Args:
             report_content: Full report content
@@ -470,15 +560,24 @@ Features with missing values:
         if filename is None:
             filename = f"ai_text_analysis_report_{self.timestamp}.md"
         
+        # 🚀 CROSS-PLATFORM: Use pathlib for robust file operations
         report_path = self.output_dir / filename
         
         try:
-            with open(report_path, 'w', encoding='utf-8') as f:
+            # Ensure directory exists
+            ensure_directory(report_path.parent)
+            
+            # 🚀 CROSS-PLATFORM: Use explicit encoding for consistent behavior
+            with open(report_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(report_content)
             
             logger.info(f"Report saved to {report_path}")
-            return str(report_path)
+            return str(report_path.resolve())  # Return absolute path
             
+        except PermissionError as e:
+            error_msg = f"Permission denied writing to {report_path}. Check file permissions."
+            logger.error(error_msg)
+            raise PermissionError(error_msg) from e
         except Exception as e:
             logger.error(f"Error saving report: {e}")
             raise
@@ -497,9 +596,13 @@ Features with missing values:
         if filename is None:
             filename = f"analysis_results_{self.timestamp}.json"
         
+        # 🚀 CROSS-PLATFORM: Use pathlib for robust file operations
         json_path = self.output_dir / filename
         
         try:
+            # Ensure directory exists
+            ensure_directory(json_path.parent)
+            
             # Convert pandas Series and numpy types for JSON serialization
             def convert_for_json(obj):
                 if isinstance(obj, pd.Series):
@@ -521,12 +624,21 @@ Features with missing values:
             
             results_clean = convert_for_json(analysis_results)
             
+            # Add platform information to results
+            results_clean['platform_info'] = self.platform_info
+            results_clean['export_timestamp'] = datetime.now().isoformat()
+            
+            # 🚀 CROSS-PLATFORM: Use explicit encoding and formatting
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(results_clean, f, indent=2, ensure_ascii=False)
             
             logger.info(f"Results exported to {json_path}")
-            return str(json_path)
+            return str(json_path.resolve())  # Return absolute path
             
+        except PermissionError as e:
+            error_msg = f"Permission denied writing to {json_path}. Check file permissions."
+            logger.error(error_msg)
+            raise PermissionError(error_msg) from e
         except Exception as e:
             logger.error(f"Error exporting results: {e}")
             raise
@@ -547,6 +659,8 @@ def generate_comprehensive_report(data: pd.DataFrame,
         Tuple[str, str]: Paths to saved report and JSON results
     """
     generator = AnalysisReportGenerator(output_dir)
+    
+    logger.info(f"Generating comprehensive report on {generator.platform_info['system']}")
     
     # Generate report sections
     sections = []
@@ -576,11 +690,15 @@ def generate_comprehensive_report(data: pd.DataFrame,
     # Combine all sections
     full_report = "\n\n".join(sections)
     
-    # Add header
+    # Add header with platform information
+    current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    platform_name = generator.platform_info['system']
+    
     header = f"""# AI Text Analysis Report
 
-**Generated:** {datetime.now().strftime("%B %d, %Y at %I:%M %p")}
-**Analysis Version:** 2.0
+**Generated:** {current_time}
+**Platform:** {platform_name}
+**Analysis Version:** 2.0.1 (Cross-Platform Compatible)
 
 ---
 
@@ -591,6 +709,9 @@ def generate_comprehensive_report(data: pd.DataFrame,
     # Save report and results
     report_path = generator.save_report(full_report)
     json_path = generator.export_results_json(analysis_results)
+    
+    logger.info(f"Report generation complete: {report_path}")
+    logger.info(f"Results exported: {json_path}")
     
     return report_path, json_path
 
@@ -610,7 +731,8 @@ def create_executive_summary(analysis_results: Dict[str, Any],
     generator = AnalysisReportGenerator(output_dir)
     summary = generator.generate_executive_summary(analysis_results)
     
-    return generator.save_report(summary, f"executive_summary_{generator.timestamp}.md")
+    summary_filename = f"executive_summary_{generator.timestamp}.md"
+    return generator.save_report(summary, summary_filename)
 
 
 def export_analysis_results(analysis_results: Dict[str, Any],
@@ -627,3 +749,57 @@ def export_analysis_results(analysis_results: Dict[str, Any],
     """
     generator = AnalysisReportGenerator(output_dir)
     return generator.export_results_json(analysis_results)
+
+
+# ============================
+# CROSS-PLATFORM UTILITIES
+# ============================
+
+def validate_output_directory(output_dir: str) -> Path:
+    """
+    Validate and prepare output directory for cross-platform use.
+    
+    Args:
+        output_dir: Output directory path
+        
+    Returns:
+        Path: Validated directory path
+        
+    Raises:
+        PermissionError: If directory cannot be created or accessed
+    """
+    try:
+        dir_path = get_safe_path(output_dir)
+        ensure_directory(dir_path)
+        
+        # Test write permission
+        test_file = dir_path / 'test_write.tmp'
+        try:
+            test_file.touch()
+            test_file.unlink()
+        except PermissionError:
+            raise PermissionError(f"No write permission for directory: {dir_path}")
+        
+        return dir_path
+        
+    except Exception as e:
+        logger.error(f"Cannot validate output directory {output_dir}: {e}")
+        raise
+
+
+def get_platform_specific_settings() -> Dict[str, Any]:
+    """Get platform-specific settings for report generation."""
+    settings = {
+        'platform': platform.system(),
+        'line_endings': '\n',  # Unix-style by default
+        'encoding': 'utf-8',
+        'path_separator': '/',
+    }
+    
+    if IS_WINDOWS:
+        settings.update({
+            'line_endings': '\r\n',  # Windows-style
+            'path_separator': '\\',
+        })
+    
+    return settings
