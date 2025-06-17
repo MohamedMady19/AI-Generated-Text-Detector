@@ -1,6 +1,7 @@
 """
 File processing utilities for reading various document formats.
-OPTIMIZED VERSION with multiprocessing support.
+OPTIMIZED VERSION with multiprocessing support and cross-platform compatibility.
+✅ CROSS-PLATFORM FIXES: pathlib paths, robust file operations, platform-aware processing
 """
 
 import os
@@ -8,10 +9,45 @@ import re
 import logging
 import unicodedata
 import multiprocessing as mp
+import platform
+import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import List
+from typing import List, Dict, Any, Optional
+from pathlib import Path
+
+# Import validation and configuration
 from core.validation import validate_file_input, validate_text_input, ValidationError
-from config import CONFIG, ERROR_MESSAGES, VALIDATION_SETTINGS
+
+# Import cross-platform configuration
+try:
+    from config import (
+        CONFIG, ERROR_MESSAGES, VALIDATION_SETTINGS,
+        IS_WINDOWS, IS_LINUX, IS_MACOS, get_safe_path, ensure_directory
+    )
+except ImportError:
+    # Fallback configuration
+    CONFIG = {
+        'MIN_TEXT_LENGTH': 10,
+        'PERFORMANCE': {
+            'USE_MULTIPROCESSING': True,
+            'MAX_WORKERS': mp.cpu_count() - 1
+        }
+    }
+    ERROR_MESSAGES = {
+        'PANDAS_REQUIRED': 'pandas is required for CSV file processing'
+    }
+    VALIDATION_SETTINGS = {
+        'SUPPORTED_ENCODINGS': ['utf-8', 'utf-16', 'latin-1', 'cp1252']
+    }
+    IS_WINDOWS = platform.system() == 'Windows'
+    IS_LINUX = platform.system() == 'Linux'
+    IS_MACOS = platform.system() == 'Darwin'
+    
+    def get_safe_path(path_str):
+        return Path(path_str).resolve()
+    
+    def ensure_directory(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 
@@ -84,12 +120,12 @@ def split_paragraphs(text: str) -> List[str]:
     return cleaned
 
 
-def read_text_file(file_path: str) -> str:
+def read_text_file(file_path: Path) -> str:
     """
-    Read text file with multiple encoding attempts.
+    Read text file with multiple encoding attempts and cross-platform compatibility.
     
     Args:
-        file_path (str): Path to text file
+        file_path (Path): Path to text file
         
     Returns:
         str: File content
@@ -97,9 +133,13 @@ def read_text_file(file_path: str) -> str:
     Raises:
         FileProcessingError: If file cannot be read
     """
+    # 🚀 CROSS-PLATFORM: Convert to Path object
+    file_path = get_safe_path(str(file_path))
+    
     for encoding in VALIDATION_SETTINGS['SUPPORTED_ENCODINGS']:
         try:
-            with open(file_path, 'r', encoding=encoding) as f:
+            # 🚀 CROSS-PLATFORM: Use pathlib for file operations
+            with file_path.open('r', encoding=encoding) as f:
                 content = f.read()
                 logger.debug(f"Successfully read text file with {encoding} encoding")
                 return content
@@ -111,12 +151,12 @@ def read_text_file(file_path: str) -> str:
     raise FileProcessingError("Could not decode text file with any supported encoding")
 
 
-def read_csv_file(file_path: str) -> str:
+def read_csv_file(file_path: Path) -> str:
     """
-    Read CSV file and extract text content.
+    Read CSV file and extract text content with cross-platform support.
     
     Args:
-        file_path (str): Path to CSV file
+        file_path (Path): Path to CSV file
         
     Returns:
         str: Combined text content
@@ -129,8 +169,12 @@ def read_csv_file(file_path: str) -> str:
     except ImportError:
         raise FileProcessingError(ERROR_MESSAGES['PANDAS_REQUIRED'])
     
+    # 🚀 CROSS-PLATFORM: Convert to Path object
+    file_path = get_safe_path(str(file_path))
+    
     try:
-        df = pd.read_csv(file_path)
+        # 🚀 CROSS-PLATFORM: Use pathlib for file path
+        df = pd.read_csv(str(file_path))
         
         # Find text column
         text_column = None
@@ -156,12 +200,12 @@ def read_csv_file(file_path: str) -> str:
         raise FileProcessingError(f"Error reading CSV file: {e}")
 
 
-def read_docx_file(file_path: str) -> str:
+def read_docx_file(file_path: Path) -> str:
     """
-    Read DOCX file and extract text content.
+    Read DOCX file and extract text content with cross-platform support.
     
     Args:
-        file_path (str): Path to DOCX file
+        file_path (Path): Path to DOCX file
         
     Returns:
         str: Document text content
@@ -174,8 +218,12 @@ def read_docx_file(file_path: str) -> str:
     except ImportError:
         raise FileProcessingError("python-docx is required for DOCX file processing")
     
+    # 🚀 CROSS-PLATFORM: Convert to Path object
+    file_path = get_safe_path(str(file_path))
+    
     try:
-        doc = docx.Document(file_path)
+        # 🚀 CROSS-PLATFORM: Use pathlib for file path
+        doc = docx.Document(str(file_path))
         paragraphs = []
         
         for para in doc.paragraphs:
@@ -191,12 +239,12 @@ def read_docx_file(file_path: str) -> str:
         raise FileProcessingError(f"Error reading DOCX file: {e}")
 
 
-def read_pdf_file(file_path: str) -> str:
+def read_pdf_file(file_path: Path) -> str:
     """
-    Read PDF file and extract text content.
+    Read PDF file and extract text content with cross-platform support.
     
     Args:
-        file_path (str): Path to PDF file
+        file_path (Path): Path to PDF file
         
     Returns:
         str: PDF text content
@@ -209,8 +257,12 @@ def read_pdf_file(file_path: str) -> str:
     except ImportError:
         raise FileProcessingError("PyPDF2 is required for PDF file processing")
     
+    # 🚀 CROSS-PLATFORM: Convert to Path object
+    file_path = get_safe_path(str(file_path))
+    
     try:
-        with open(file_path, 'rb') as f:
+        # 🚀 CROSS-PLATFORM: Use pathlib for file operations
+        with file_path.open('rb') as f:
             reader = PyPDF2.PdfReader(f)
             pages_text = []
             
@@ -234,7 +286,7 @@ def read_pdf_file(file_path: str) -> str:
 
 def read_file_content(file_path: str) -> str:
     """
-    Read content from various file formats with enhanced error handling.
+    Read content from various file formats with enhanced error handling and cross-platform support.
     
     Args:
         file_path (str): Path to file
@@ -245,21 +297,22 @@ def read_file_content(file_path: str) -> str:
     Raises:
         FileProcessingError: If file cannot be processed
     """
-    # Validate file first
+    # 🚀 CROSS-PLATFORM: Validate and convert to Path object
     validated_path = validate_file_input(file_path)
-    file_ext = os.path.splitext(validated_path)[1].lower()
+    file_path_obj = get_safe_path(validated_path)
+    file_ext = file_path_obj.suffix.lower()
     
-    logger.info(f"Reading file: {os.path.basename(validated_path)} ({file_ext})")
+    logger.info(f"Reading file: {file_path_obj.name} ({file_ext}) on {platform.system()}")
     
     try:
         if file_ext == '.txt':
-            content = read_text_file(validated_path)
+            content = read_text_file(file_path_obj)
         elif file_ext == '.csv':
-            content = read_csv_file(validated_path)
+            content = read_csv_file(file_path_obj)
         elif file_ext == '.docx':
-            content = read_docx_file(validated_path)
+            content = read_docx_file(file_path_obj)
         elif file_ext == '.pdf':
-            content = read_pdf_file(validated_path)
+            content = read_pdf_file(file_path_obj)
         else:
             # This shouldn't happen due to validation, but just in case
             raise FileProcessingError(f"Unsupported file format: {file_ext}")
@@ -281,11 +334,11 @@ def read_file_content(file_path: str) -> str:
     except FileProcessingError:
         raise
     except Exception as e:
-        logger.error(f"Unexpected error reading file {validated_path}: {e}")
+        logger.error(f"Unexpected error reading file {file_path_obj}: {e}")
         raise FileProcessingError(f"Unexpected error reading file: {e}")
 
 
-def process_single_file_worker(file_path: str) -> dict:
+def process_single_file_worker(file_path: str) -> Dict[str, Any]:
     """
     Worker function for processing a single file - optimized for multiprocessing.
     Must be at module level for multiprocessing.
@@ -294,141 +347,214 @@ def process_single_file_worker(file_path: str) -> dict:
         file_path (str): Path to file to process
         
     Returns:
-        dict: Processing result
+        Dict[str, Any]: Processing result
     """
     try:
+        # 🚀 CROSS-PLATFORM: Convert to Path for consistent handling
+        file_path_obj = get_safe_path(file_path)
+        
         # Read file content
-        content = read_file_content(file_path)
+        content = read_file_content(str(file_path_obj))
         
         # Split into paragraphs
         paragraphs = split_paragraphs(content)
         
         return {
-            'file_path': file_path,
+            'file_path': str(file_path_obj),  # Return as string for JSON serialization
             'paragraphs': paragraphs,
             'paragraph_count': len(paragraphs),
-            'status': 'success'
+            'status': 'success',
+            'file_size': file_path_obj.stat().st_size if file_path_obj.exists() else 0,
+            'file_name': file_path_obj.name
         }
         
     except Exception as e:
         logger.error(f"Failed to process {file_path}: {e}")
         return {
-            'file_path': file_path,
+            'file_path': str(get_safe_path(file_path)),
             'error': str(e),
-            'status': 'error'
+            'status': 'error',
+            'file_name': Path(file_path).name
         }
 
 
-def get_file_info(file_path: str) -> dict:
+def get_file_info(file_path: str) -> Dict[str, Any]:
     """
-    Get information about a file.
+    Get information about a file with cross-platform compatibility.
     
     Args:
         file_path (str): Path to file
         
     Returns:
-        dict: File information
+        Dict[str, Any]: File information
     """
     try:
-        stat = os.stat(file_path)
-        return {
-            'size_bytes': stat.st_size,
-            'size_mb': stat.st_size / (1024 * 1024),
-            'extension': os.path.splitext(file_path)[1].lower(),
-            'basename': os.path.basename(file_path),
-            'absolute_path': os.path.abspath(file_path),
-            'exists': True,
-            'is_file': os.path.isfile(file_path),
-            'is_readable': os.access(file_path, os.R_OK),
-        }
-    except OSError:
+        # 🚀 CROSS-PLATFORM: Use pathlib for robust file operations
+        file_path_obj = get_safe_path(file_path)
+        
+        if file_path_obj.exists():
+            stat = file_path_obj.stat()
+            return {
+                'size_bytes': stat.st_size,
+                'size_mb': stat.st_size / (1024 * 1024),
+                'extension': file_path_obj.suffix.lower(),
+                'basename': file_path_obj.name,
+                'absolute_path': str(file_path_obj.resolve()),
+                'parent_dir': str(file_path_obj.parent),
+                'exists': True,
+                'is_file': file_path_obj.is_file(),
+                'is_readable': os.access(str(file_path_obj), os.R_OK),
+                'platform': platform.system()
+            }
+        else:
+            return {
+                'exists': False,
+                'basename': file_path_obj.name,
+                'absolute_path': str(file_path_obj.resolve()),
+                'parent_dir': str(file_path_obj.parent),
+                'platform': platform.system()
+            }
+    except Exception as e:
+        logger.error(f"Error getting file info for {file_path}: {e}")
         return {
             'exists': False,
-            'basename': os.path.basename(file_path),
-            'absolute_path': os.path.abspath(file_path),
+            'error': str(e),
+            'basename': Path(file_path).name,
+            'platform': platform.system()
         }
 
 
-def batch_process_files(file_paths: List[str], progress_callback=None) -> dict:
+def batch_process_files(file_paths: List[str], progress_callback: Optional[callable] = None) -> Dict[str, Any]:
     """
     OPTIMIZED: Process multiple files in batch with MULTIPROCESSING and progress reporting.
+    Enhanced with cross-platform compatibility.
     
     Args:
         file_paths (List[str]): List of file paths
         progress_callback: Optional callback function for progress updates
         
     Returns:
-        dict: Processing results
+        Dict[str, Any]: Processing results
     """
     results = {
         'successful': [],
         'failed': [],
         'total_content': '',
-        'total_paragraphs': 0
+        'total_paragraphs': 0,
+        'platform_info': {
+            'system': platform.system(),
+            'python_version': sys.version,
+            'multiprocessing_enabled': False
+        }
     }
     
     if not file_paths:
         return results
     
+    # 🚀 CROSS-PLATFORM: Convert all paths to Path objects for validation
+    validated_paths = []
+    for file_path in file_paths:
+        try:
+            path_obj = get_safe_path(file_path)
+            if path_obj.exists() and path_obj.is_file():
+                validated_paths.append(str(path_obj))
+            else:
+                logger.warning(f"File not found or not accessible: {path_obj}")
+                results['failed'].append({
+                    'file_path': str(path_obj),
+                    'error': 'File not found or not accessible',
+                    'status': 'error'
+                })
+        except Exception as e:
+            logger.error(f"Error validating path {file_path}: {e}")
+            results['failed'].append({
+                'file_path': file_path,
+                'error': f'Path validation error: {e}',
+                'status': 'error'
+            })
+    
+    if not validated_paths:
+        logger.warning("No valid files to process")
+        return results
+    
     # Get performance settings from config
-    use_multiprocessing = CONFIG.get('PERFORMANCE', {}).get('USE_MULTIPROCESSING', True)
-    max_workers = CONFIG.get('PERFORMANCE', {}).get('MAX_WORKERS', mp.cpu_count() - 1)
+    perf_config = CONFIG.get('PERFORMANCE', {})
+    use_multiprocessing = perf_config.get('USE_MULTIPROCESSING', True)
+    max_workers = perf_config.get('MAX_WORKERS', mp.cpu_count() - 1)
+    
+    # Platform-specific multiprocessing considerations
+    if IS_WINDOWS:
+        # Windows has some multiprocessing limitations
+        if len(validated_paths) < 3:
+            use_multiprocessing = False
+            logger.debug("Disabling multiprocessing for small file count on Windows")
     
     # Determine number of workers
-    if use_multiprocessing and len(file_paths) > 1:
-        num_workers = min(len(file_paths), max_workers)
+    if use_multiprocessing and len(validated_paths) > 1:
+        num_workers = min(len(validated_paths), max_workers)
         num_workers = max(1, num_workers)  # At least 1 worker
+        results['platform_info']['multiprocessing_enabled'] = True
     else:
         num_workers = 1
+        results['platform_info']['multiprocessing_enabled'] = False
     
-    logger.info(f"Processing {len(file_paths)} files with {num_workers} workers")
+    logger.info(f"Processing {len(validated_paths)} files with {num_workers} workers on {platform.system()}")
     
     if num_workers > 1:
         # Use multiprocessing for multiple files
-        with ProcessPoolExecutor(max_workers=num_workers) as executor:
-            # Submit all files
-            future_to_file = {
-                executor.submit(process_single_file_worker, file_path): file_path 
-                for file_path in file_paths
-            }
-            
-            # Process results as they complete
-            completed = 0
-            for future in as_completed(future_to_file):
-                file_path = future_to_file[future]
-                completed += 1
+        try:
+            with ProcessPoolExecutor(max_workers=num_workers) as executor:
+                # Submit all files
+                future_to_file = {
+                    executor.submit(process_single_file_worker, file_path): file_path 
+                    for file_path in validated_paths
+                }
                 
-                try:
-                    result = future.result(timeout=300)  # 5 minute timeout per file
+                # Process results as they complete
+                completed = 0
+                for future in as_completed(future_to_file):
+                    file_path = future_to_file[future]
+                    completed += 1
                     
-                    if result['status'] == 'success':
-                        results['successful'].append(result)
+                    try:
+                        result = future.result(timeout=300)  # 5 minute timeout per file
                         
-                        # Add to total content
-                        content = '\n\n'.join(result['paragraphs'])
-                        results['total_content'] += content + '\n\n'
-                        results['total_paragraphs'] += result['paragraph_count']
-                    else:
-                        results['failed'].append(result)
-                        
-                except Exception as e:
-                    logger.error(f"Exception processing {file_path}: {e}")
-                    results['failed'].append({
-                        'file_path': file_path,
-                        'error': str(e),
-                        'status': 'error'
-                    })
-                
-                # Progress callback
-                if progress_callback:
-                    progress_callback(completed, len(file_paths), 
-                                    f"Processed {os.path.basename(file_path)}")
-    else:
+                        if result['status'] == 'success':
+                            results['successful'].append(result)
+                            
+                            # Add to total content
+                            content = '\n\n'.join(result['paragraphs'])
+                            results['total_content'] += content + '\n\n'
+                            results['total_paragraphs'] += result['paragraph_count']
+                        else:
+                            results['failed'].append(result)
+                            
+                    except Exception as e:
+                        logger.error(f"Exception processing {file_path}: {e}")
+                        results['failed'].append({
+                            'file_path': file_path,
+                            'error': str(e),
+                            'status': 'error'
+                        })
+                    
+                    # Progress callback
+                    if progress_callback:
+                        file_name = Path(file_path).name
+                        progress_callback(completed, len(validated_paths), 
+                                        f"Processed {file_name}")
+        except Exception as e:
+            logger.error(f"Multiprocessing error, falling back to sequential: {e}")
+            # Fall back to sequential processing
+            num_workers = 1
+            results['platform_info']['multiprocessing_enabled'] = False
+    
+    if num_workers == 1:
         # Sequential processing (fallback or single file)
-        for i, file_path in enumerate(file_paths):
+        for i, file_path in enumerate(validated_paths):
             try:
                 if progress_callback:
-                    progress_callback(i, len(file_paths), f"Processing {os.path.basename(file_path)}")
+                    file_name = Path(file_path).name
+                    progress_callback(i, len(validated_paths), f"Processing {file_name}")
                 
                 result = process_single_file_worker(file_path)
                 
@@ -450,9 +576,119 @@ def batch_process_files(file_paths: List[str], progress_callback=None) -> dict:
                 })
     
     if progress_callback:
-        progress_callback(len(file_paths), len(file_paths), "Batch processing complete")
+        progress_callback(len(validated_paths), len(validated_paths), "Batch processing complete")
     
-    logger.info(f"Batch processing complete: {len(results['successful'])} successful, "
-                f"{len(results['failed'])} failed")
+    # Log results with platform info
+    logger.info(f"Batch processing complete on {platform.system()}: "
+                f"{len(results['successful'])} successful, {len(results['failed'])} failed")
+    logger.info(f"Multiprocessing used: {results['platform_info']['multiprocessing_enabled']}")
     
     return results
+
+
+# ============================
+# CROSS-PLATFORM UTILITIES
+# ============================
+
+def get_supported_file_types() -> List[str]:
+    """Get list of supported file types based on available libraries."""
+    supported = ['.txt']  # Always supported
+    
+    # Check for optional dependencies
+    try:
+        import pandas
+        supported.append('.csv')
+    except ImportError:
+        pass
+    
+    try:
+        import docx
+        supported.append('.docx')
+    except ImportError:
+        pass
+    
+    try:
+        import PyPDF2
+        supported.append('.pdf')
+    except ImportError:
+        pass
+    
+    return supported
+
+
+def validate_file_paths(file_paths: List[str]) -> Dict[str, List[str]]:
+    """
+    Validate a list of file paths for cross-platform compatibility.
+    
+    Args:
+        file_paths: List of file path strings
+        
+    Returns:
+        Dict with 'valid' and 'invalid' lists
+    """
+    valid_paths = []
+    invalid_paths = []
+    supported_types = get_supported_file_types()
+    
+    for file_path in file_paths:
+        try:
+            path_obj = get_safe_path(file_path)
+            
+            # Check if file exists
+            if not path_obj.exists():
+                invalid_paths.append(f"{file_path}: File not found")
+                continue
+            
+            # Check if it's a file
+            if not path_obj.is_file():
+                invalid_paths.append(f"{file_path}: Not a regular file")
+                continue
+            
+            # Check file extension
+            if path_obj.suffix.lower() not in supported_types:
+                invalid_paths.append(f"{file_path}: Unsupported file type")
+                continue
+            
+            # Check readability
+            if not os.access(str(path_obj), os.R_OK):
+                invalid_paths.append(f"{file_path}: No read permission")
+                continue
+            
+            valid_paths.append(str(path_obj))
+            
+        except Exception as e:
+            invalid_paths.append(f"{file_path}: {str(e)}")
+    
+    return {
+        'valid': valid_paths,
+        'invalid': invalid_paths,
+        'platform': platform.system(),
+        'supported_types': supported_types
+    }
+
+
+def get_file_encoding(file_path: str) -> Optional[str]:
+    """
+    Detect file encoding for cross-platform text reading.
+    
+    Args:
+        file_path: Path to text file
+        
+    Returns:
+        Detected encoding or None
+    """
+    try:
+        import chardet
+    except ImportError:
+        logger.warning("chardet not available, using default encodings")
+        return None
+    
+    try:
+        file_path_obj = get_safe_path(file_path)
+        with file_path_obj.open('rb') as f:
+            raw_data = f.read(10000)  # Read first 10KB
+            result = chardet.detect(raw_data)
+            return result.get('encoding')
+    except Exception as e:
+        logger.error(f"Error detecting encoding for {file_path}: {e}")
+        return None
