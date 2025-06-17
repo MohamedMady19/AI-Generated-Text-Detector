@@ -2,18 +2,112 @@
 Configuration settings for the AI Text Feature Extractor.
 🚀 COMPLETE FIXED VERSION with all required components including missing ERROR_MESSAGES
 ✅ FIXES: Added missing error messages, fixed validation settings, enhanced performance config
+✅ CROSS-PLATFORM FIXES: pathlib paths, platform detection, Linux GUI compatibility
 """
 
 import os
+import sys
+import platform
 import multiprocessing
+from pathlib import Path
+
+# ============================
+# PLATFORM DETECTION
+# ============================
+
+IS_WINDOWS = platform.system() == 'Windows'
+IS_LINUX = platform.system() == 'Linux'
+IS_MACOS = platform.system() == 'Darwin'
+PLATFORM_NAME = platform.system()
+
+# ============================
+# CROSS-PLATFORM PATHS
+# ============================
+
+# Get platform-appropriate paths
+def get_default_paths():
+    """Get default paths based on platform."""
+    home_dir = Path.home()
+    
+    if IS_WINDOWS:
+        app_data = Path(os.getenv('APPDATA', home_dir / 'AppData' / 'Roaming'))
+        data_dir = app_data / 'AITextExtractor'
+    elif IS_MACOS:
+        data_dir = home_dir / 'Library' / 'Application Support' / 'AITextExtractor'
+    else:  # Linux and other Unix-like systems
+        data_dir = home_dir / '.local' / 'share' / 'aitextextractor'
+    
+    # Ensure directory exists
+    data_dir.mkdir(parents=True, exist_ok=True)
+    
+    return {
+        'data_dir': data_dir,
+        'output_file': data_dir / 'feature_output.csv',
+        'log_file': data_dir / 'text_extractor.log',
+        'cache_dir': data_dir / 'cache'
+    }
+
+# Get platform-specific paths
+DEFAULT_PATHS = get_default_paths()
+
+# ============================
+# PLATFORM-SPECIFIC GUI SETTINGS
+# ============================
+
+def get_gui_settings():
+    """Get GUI settings optimized for current platform."""
+    base_settings = {
+        'WINDOW_SIZE': '1200x800',
+        'TREE_HEIGHT': 8,
+        'LOG_HEIGHT': 8,
+        'MIN_WINDOW_SIZE': '800x600'
+    }
+    
+    if IS_WINDOWS:
+        base_settings.update({
+            'DEFAULT_FONT': ('Segoe UI', 9),
+            'MONOSPACE_FONT': ('Consolas', 9),
+            'TREE_FONT': ('Segoe UI', 9),
+            'BUTTON_PADDING': 5,
+            'SCROLLBAR_WIDTH': 20
+        })
+    elif IS_MACOS:
+        base_settings.update({
+            'DEFAULT_FONT': ('SF Pro Text', 13),
+            'MONOSPACE_FONT': ('SF Mono', 12),
+            'TREE_FONT': ('SF Pro Text', 12),
+            'BUTTON_PADDING': 8,
+            'SCROLLBAR_WIDTH': 15
+        })
+    else:  # Linux
+        base_settings.update({
+            'DEFAULT_FONT': ('DejaVu Sans', 9),
+            'MONOSPACE_FONT': ('DejaVu Sans Mono', 9),
+            'TREE_FONT': ('DejaVu Sans', 9),
+            'BUTTON_PADDING': 4,
+            'SCROLLBAR_WIDTH': 16,
+            'USE_TTK_THEMES': True,  # Use themed widgets on Linux
+            'THEME': 'clam'  # Better looking theme for Linux
+        })
+    
+    return base_settings
 
 # ============================
 # CORE CONFIGURATION
 # ============================
 
 CONFIG = {
-    # Output settings
-    'CSV_OUTPUT_FILE': 'feature_output.csv',
+    # Platform information
+    'PLATFORM': PLATFORM_NAME,
+    'IS_WINDOWS': IS_WINDOWS,
+    'IS_LINUX': IS_LINUX,
+    'IS_MACOS': IS_MACOS,
+    
+    # Output settings - Using pathlib
+    'CSV_OUTPUT_FILE': str(DEFAULT_PATHS['output_file']),
+    'LOG_FILE': str(DEFAULT_PATHS['log_file']),
+    'DATA_DIR': str(DEFAULT_PATHS['data_dir']),
+    'CACHE_DIR': str(DEFAULT_PATHS['cache_dir']),
     'DEFAULT_ROUNDING_PRECISION': 4,
     
     # Text processing settings
@@ -45,10 +139,8 @@ CONFIG = {
     'ENABLE_TOPOLOGICAL_FEATURES': True,
     'TOPOLOGICAL_TIMEOUT': 10,  # 10 second timeout
     
-    # GUI settings
-    'GUI_WINDOW_SIZE': '1200x800',
-    'GUI_TREE_HEIGHT': 8,
-    'GUI_LOG_HEIGHT': 8,
+    # GUI settings - Platform-specific
+    'GUI': get_gui_settings(),
     
     # File processing - FIXED
     'SUPPORTED_EXTENSIONS': ['.txt', '.csv', '.docx', '.pdf'],
@@ -88,6 +180,13 @@ CONFIG = {
         'FORCE_GARBAGE_COLLECTION': True
     }
 }
+
+# Add backward compatibility for GUI settings
+CONFIG.update({
+    'GUI_WINDOW_SIZE': CONFIG['GUI']['WINDOW_SIZE'],
+    'GUI_TREE_HEIGHT': CONFIG['GUI']['TREE_HEIGHT'],
+    'GUI_LOG_HEIGHT': CONFIG['GUI']['LOG_HEIGHT']
+})
 
 # ============================
 # ERROR MESSAGES - COMPLETE SET
@@ -158,7 +257,7 @@ VALIDATION_SETTINGS = {
 LOGGING_CONFIG = {
     'level': 'INFO',
     'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    'file': 'text_extractor.log',
+    'file': str(DEFAULT_PATHS['log_file']),  # Use pathlib path
     'max_size_mb': 10,
     'backup_count': 5
 }
@@ -354,6 +453,29 @@ def get_feature_categories():
 
 
 # ============================
+# CROSS-PLATFORM PATH UTILITIES
+# ============================
+
+def get_safe_path(path_str):
+    """Convert string path to Path object safely."""
+    return Path(path_str).resolve()
+
+
+def ensure_directory(path):
+    """Ensure directory exists, create if needed."""
+    path_obj = Path(path)
+    path_obj.mkdir(parents=True, exist_ok=True)
+    return path_obj
+
+
+def get_output_path(filename=None):
+    """Get cross-platform output path."""
+    if filename is None:
+        return Path(CONFIG['CSV_OUTPUT_FILE'])
+    return Path(CONFIG['DATA_DIR']) / filename
+
+
+# ============================
 # VALIDATION AND SETUP
 # ============================
 
@@ -362,13 +484,29 @@ def validate_config():
     errors = []
     warnings = []
     
-    # Check required directories
-    output_dir = os.path.dirname(CONFIG['CSV_OUTPUT_FILE'])
-    if output_dir and not os.path.exists(output_dir):
+    # Check required directories using pathlib
+    output_path = Path(CONFIG['CSV_OUTPUT_FILE'])
+    output_dir = output_path.parent
+    
+    if not output_dir.exists():
         try:
-            os.makedirs(output_dir, exist_ok=True)
+            output_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             errors.append(f"Cannot create output directory: {e}")
+    
+    # Check data directory
+    data_dir = Path(CONFIG['DATA_DIR'])
+    try:
+        data_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        errors.append(f"Cannot create data directory: {e}")
+    
+    # Check cache directory
+    cache_dir = Path(CONFIG['CACHE_DIR'])
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        warnings.append(f"Cannot create cache directory: {e}")
     
     # Validate performance settings
     perf_config = CONFIG['PERFORMANCE']
@@ -421,6 +559,10 @@ def setup_environment():
     logger = logging.getLogger(__name__)
     
     try:
+        # Create necessary directories
+        ensure_directory(CONFIG['DATA_DIR'])
+        ensure_directory(CONFIG['CACHE_DIR'])
+        
         # Auto-configure performance if enabled
         if CONFIG.get('ENABLE_PERFORMANCE_OPTIMIZATION', True):
             success = auto_configure_performance()
@@ -428,6 +570,11 @@ def setup_environment():
                 logger.info("Performance settings auto-configured based on system capabilities")
             else:
                 logger.info("Using conservative performance settings (psutil not available)")
+        
+        # Log platform information
+        logger.info(f"Platform: {PLATFORM_NAME}")
+        logger.info(f"Python: {sys.version}")
+        logger.info(f"Data directory: {CONFIG['DATA_DIR']}")
         
         # Log current configuration
         perf_config = get_performance_config()
@@ -463,9 +610,8 @@ def get_error_message(error_key: str, **kwargs) -> str:
 
 def check_system_requirements():
     """Check system requirements and return status."""
-    import sys
-    
     status = {
+        'platform': PLATFORM_NAME,
         'python_version': sys.version_info,
         'python_ok': sys.version_info >= (3, 8),
         'warnings': [],
@@ -498,6 +644,14 @@ def check_system_requirements():
         spacy.load('en_core_web_sm')
     except (ImportError, OSError):
         status['errors'].append("spaCy English model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm")
+    
+    # Platform-specific checks
+    if IS_LINUX:
+        # Check for tkinter on Linux
+        try:
+            import tkinter
+        except ImportError:
+            status['errors'].append("tkinter not available. Install with: sudo apt-get install python3-tk")
     
     return status
 
@@ -541,8 +695,8 @@ def get_logging_config():
 
 
 # Version information
-__version__ = "2.0.0"
-__config_version__ = "2.0.0"
+__version__ = "2.0.1"  # Incremented for cross-platform fixes
+__config_version__ = "2.0.1"
 
 # Export main items
 __all__ = [
@@ -552,6 +706,10 @@ __all__ = [
     'LOGGING_CONFIG',
     'DISCOURSE_MARKERS', 
     'FALLBACK_STOP_WORDS',
+    'IS_WINDOWS',
+    'IS_LINUX',
+    'IS_MACOS',
+    'PLATFORM_NAME',
     'get_performance_config',
     'update_performance_config',
     'get_system_recommendations',
@@ -565,7 +723,10 @@ __all__ = [
     'get_validation_settings',
     'get_logging_config',
     'get_error_message',
-    'check_system_requirements'
+    'check_system_requirements',
+    'get_safe_path',
+    'ensure_directory',
+    'get_output_path'
 ]
 
 # ============================

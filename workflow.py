@@ -2,17 +2,50 @@
 Optimized workflow integration for the AI Text Feature Extractor.
 🚀 COMPLETELY FIXED VERSION with smooth real-time progress and organized feature columns.
 ✅ FIXES: Real-time granular progress, performance optimization, better error handling
+✅ CROSS-PLATFORM FIXES: pathlib paths, directory handling, platform-aware optimizations
 """
 
 import logging
 import time
 import csv
 import os
+import sys
+import platform
 from typing import List, Dict, Any, Optional, Callable
+from pathlib import Path
+import threading
+
+# Import core components
 from core.file_processing import batch_process_files
 from features.base import extract_features_from_file_results, get_organized_feature_columns
-from config import CONFIG, get_performance_config
-import threading
+
+# Import configuration with platform detection
+try:
+    from config import (
+        CONFIG, get_performance_config, IS_WINDOWS, IS_LINUX, IS_MACOS,
+        ensure_directory, get_safe_path, get_output_path
+    )
+except ImportError:
+    # Fallback if config not available
+    CONFIG = {'CSV_OUTPUT_FILE': 'feature_output.csv'}
+    IS_WINDOWS = platform.system() == 'Windows'
+    IS_LINUX = platform.system() == 'Linux'
+    IS_MACOS = platform.system() == 'Darwin'
+    
+    def get_performance_config():
+        return {'USE_MULTIPROCESSING': True}
+    
+    def ensure_directory(path):
+        Path(path).mkdir(parents=True, exist_ok=True)
+        return Path(path)
+    
+    def get_safe_path(path_str):
+        return Path(path_str).resolve()
+    
+    def get_output_path(filename=None):
+        if filename:
+            return Path(filename)
+        return Path('feature_output.csv')
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +53,7 @@ logger = logging.getLogger(__name__)
 class OptimizedWorkflow:
     """
     🚀 FIXED: Main workflow class that coordinates optimized processing with organized features.
-    Now includes real-time granular progress tracking.
+    Now includes real-time granular progress tracking and cross-platform compatibility.
     """
     
     def __init__(self):
@@ -37,6 +70,16 @@ class OptimizedWorkflow:
         self.current_stage = "Ready"
         self.total_stages = 4  # reading, spacy, features, saving
         self.stage_progress = {}
+        
+        # Platform-specific optimizations
+        self.platform_info = {
+            'system': platform.system(),
+            'is_windows': IS_WINDOWS,
+            'is_linux': IS_LINUX,
+            'is_macos': IS_MACOS
+        }
+        
+        logger.debug(f"Workflow initialized on {self.platform_info['system']}")
         
     def process_files_to_csv(self, 
                            file_paths: List[str], 
@@ -60,8 +103,15 @@ class OptimizedWorkflow:
         self.stats['start_time'] = time.time()
         self.is_cancelled = False
         
+        # 🚀 CROSS-PLATFORM: Handle output file path properly
         if output_file is None:
-            output_file = CONFIG['CSV_OUTPUT_FILE']
+            output_file = str(get_output_path())
+        else:
+            output_file = str(get_safe_path(output_file))
+        
+        # Ensure output directory exists
+        output_path = Path(output_file)
+        ensure_directory(output_path.parent)
         
         if labels is None:
             labels = {}
@@ -70,6 +120,7 @@ class OptimizedWorkflow:
             sources = {}
         
         logger.info(f"🚀 Starting FIXED optimized workflow for {len(file_paths)} files")
+        logger.info(f"Platform: {self.platform_info['system']}")
         logger.info(f"Output file: {output_file}")
         logger.info(f"Performance settings: {get_performance_config()}")
         
@@ -127,7 +178,7 @@ class OptimizedWorkflow:
             
             result = {
                 'success': True,
-                'output_file': output_file,
+                'output_file': str(output_path.resolve()),  # Return absolute path
                 'files_processed': self.stats['files_processed'],
                 'paragraphs_processed': self.stats['paragraphs_processed'],
                 'features_extracted': self.stats['features_extracted'],
@@ -135,28 +186,32 @@ class OptimizedWorkflow:
                 'files_per_second': self.stats['files_processed'] / total_time if total_time > 0 else 0,
                 'paragraphs_per_second': self.stats['paragraphs_processed'] / total_time if total_time > 0 else 0,
                 'failed_files': file_results['failed'],
-                'feature_columns': get_organized_feature_columns()
+                'feature_columns': get_organized_feature_columns(),
+                'platform_info': self.platform_info
             }
             
             logger.info("🚀 FIXED: Optimized workflow completed successfully")
+            logger.info(f"  Platform: {self.platform_info['system']}")
             logger.info(f"  Files processed: {result['files_processed']}")
             logger.info(f"  Paragraphs processed: {result['paragraphs_processed']}")
             logger.info(f"  Features extracted: {result['features_extracted']}")
             logger.info(f"  Total time: {result['processing_time']:.2f}s")
             logger.info(f"  Processing speed: {result['files_per_second']:.2f} files/sec")
+            logger.info(f"  Output saved to: {result['output_file']}")
             
             return result
             
         except Exception as e:
             self.stats['end_time'] = time.time()
-            logger.error(f"Workflow failed: {e}")
+            logger.error(f"Workflow failed: {e}", exc_info=True)
             
             return {
                 'success': False,
                 'error': str(e),
                 'processing_time': self.stats['end_time'] - self.stats['start_time'] if self.stats['start_time'] else 0,
                 'files_processed': self.stats['files_processed'],
-                'paragraphs_processed': self.stats['paragraphs_processed']
+                'paragraphs_processed': self.stats['paragraphs_processed'],
+                'platform_info': self.platform_info
             }
     
     def cancel_processing(self):
@@ -215,9 +270,17 @@ class OptimizedWorkflow:
                               output_file: str,
                               labels: Dict[str, str],
                               sources: Dict[str, str]):
-        """🚀 FIXED: Save feature results to CSV file with organized column ordering."""
+        """🚀 FIXED: Save feature results to CSV file with organized column ordering and cross-platform paths."""
         if not feature_results:
             raise ValueError("No feature results to save")
+        
+        # 🚀 CROSS-PLATFORM: Ensure output file path is properly handled
+        output_path = Path(output_file)
+        
+        # Ensure directory exists
+        if not output_path.parent.exists():
+            ensure_directory(output_path.parent)
+            logger.info(f"Created output directory: {output_path.parent}")
         
         # Get all possible columns
         all_columns = set()
@@ -252,40 +315,50 @@ class OptimizedWorkflow:
                                     if col not in priority_columns + ['source', 'is_AI', 'total_paragraphs', 'file_path', 'file_basename', 'paragraph_index']])
             final_columns = priority_columns + feature_columns + ['source', 'is_AI']
         
-        logger.info(f"💾 Saving {len(feature_results)} rows to {output_file}")
+        logger.info(f"💾 Saving {len(feature_results)} rows to {output_path}")
         logger.info(f"📊 Total columns: {len(final_columns)}")
         
-        with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=final_columns, extrasaction='ignore')
-            writer.writeheader()
+        # 🚀 CROSS-PLATFORM: Use pathlib for robust file handling
+        try:
+            with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=final_columns, extrasaction='ignore')
+                writer.writeheader()
+                
+                for i, result in enumerate(feature_results):
+                    if self.is_cancelled:
+                        break
+                    
+                    # Add labels and sources based on file_path
+                    file_path = result.get('file_path', '')
+                    result['is_AI'] = labels.get(file_path, 0)  # Default to 0 (Human)
+                    result['source'] = sources.get(file_path, 'Unknown')
+                    
+                    # Remove unwanted columns from output
+                    result.pop('file_path', None)
+                    result.pop('file_basename', None)
+                    result.pop('total_paragraphs', None)
+                    result.pop('paragraph_index', None)
+                    
+                    # Fill missing columns with 0
+                    for col in final_columns:
+                        if col not in result:
+                            result[col] = 0
+                    
+                    writer.writerow(result)
+                    
+                    # 🚀 OPTIMIZATION: Log progress every 100 rows
+                    if (i + 1) % 100 == 0:
+                        logger.debug(f"Saved {i + 1}/{len(feature_results)} rows")
             
-            for i, result in enumerate(feature_results):
-                if self.is_cancelled:
-                    break
-                
-                # Add labels and sources based on file_path
-                file_path = result.get('file_path', '')
-                result['is_AI'] = labels.get(file_path, 0)  # Default to 0 (Human)
-                result['source'] = sources.get(file_path, 'Unknown')
-                
-                # Remove unwanted columns from output
-                result.pop('file_path', None)
-                result.pop('file_basename', None)
-                result.pop('total_paragraphs', None)
-                result.pop('paragraph_index', None)
-                
-                # Fill missing columns with 0
-                for col in final_columns:
-                    if col not in result:
-                        result[col] = 0
-                
-                writer.writerow(result)
-                
-                # 🚀 OPTIMIZATION: Log progress every 100 rows
-                if (i + 1) % 100 == 0:
-                    logger.debug(f"Saved {i + 1}/{len(feature_results)} rows")
-        
-        logger.info(f"✅ Successfully saved results to {output_file} with organized feature grouping")
+            logger.info(f"✅ Successfully saved results to {output_path} with organized feature grouping")
+            
+        except PermissionError as e:
+            error_msg = f"Permission denied writing to {output_path}. Check file permissions and ensure the file is not open in another program."
+            logger.error(error_msg)
+            raise PermissionError(error_msg) from e
+        except Exception as e:
+            logger.error(f"Failed to save CSV file: {e}")
+            raise
     
     def _get_cancelled_result(self):
         """Get result dictionary for cancelled processing."""
@@ -294,7 +367,8 @@ class OptimizedWorkflow:
             'cancelled': True,
             'processing_time': time.time() - self.stats['start_time'] if self.stats['start_time'] else 0,
             'files_processed': self.stats['files_processed'],
-            'paragraphs_processed': self.stats['paragraphs_processed']
+            'paragraphs_processed': self.stats['paragraphs_processed'],
+            'platform_info': self.platform_info
         }
 
 
@@ -352,9 +426,10 @@ class ThreadedWorkflow:
                 self.result = {
                     'success': False,
                     'error': str(e),
-                    'exception': e
+                    'exception': e,
+                    'platform_info': getattr(self.workflow, 'platform_info', {})
                 }
-                logger.error(f"Threaded workflow error: {e}")
+                logger.error(f"Threaded workflow error: {e}", exc_info=True)
             finally:
                 if completion_callback:
                     try:
@@ -445,8 +520,11 @@ def integrate_with_gui(gui_instance, file_paths: List[str], labels: Dict[str, st
         try:
             if result.get('success'):
                 if hasattr(gui_instance, 'show_success_message'):
+                    platform_info = result.get('platform_info', {})
+                    platform_text = f" on {platform_info.get('system', 'Unknown')}" if platform_info else ""
+                    
                     completion_message = (
-                        f"✅ FIXED: Processing complete with organized features!\n"
+                        f"✅ FIXED: Processing complete with organized features{platform_text}!\n"
                         f"📁 Files: {result['files_processed']}\n"
                         f"📄 Paragraphs: {result['paragraphs_processed']}\n"
                         f"🎯 Features: {result['features_extracted']}\n"
@@ -464,7 +542,10 @@ def integrate_with_gui(gui_instance, file_paths: List[str], labels: Dict[str, st
             else:
                 if hasattr(gui_instance, 'show_error_message'):
                     error_msg = result.get('error', 'Unknown error')
-                    error_message = f"❌ Processing failed: {error_msg}"
+                    platform_info = result.get('platform_info', {})
+                    platform_text = f" (Platform: {platform_info.get('system', 'Unknown')})" if platform_info else ""
+                    
+                    error_message = f"❌ Processing failed{platform_text}: {error_msg}"
                     
                     # Thread-safe GUI update
                     if hasattr(gui_instance, 'root') and gui_instance.root:
@@ -494,6 +575,58 @@ def integrate_with_gui(gui_instance, file_paths: List[str], labels: Dict[str, st
 
 
 # ============================
+# CROSS-PLATFORM PATH UTILITIES
+# ============================
+
+def validate_output_path(output_file: str) -> Path:
+    """
+    Validate and prepare output file path for cross-platform use.
+    
+    Args:
+        output_file: Output file path string
+        
+    Returns:
+        Path: Validated and resolved Path object
+        
+    Raises:
+        ValueError: If path is invalid
+        PermissionError: If path is not writable
+    """
+    try:
+        output_path = get_safe_path(output_file)
+        
+        # Ensure directory exists
+        ensure_directory(output_path.parent)
+        
+        # Check if we can write to the location
+        try:
+            # Test write permission by creating a temporary file
+            test_file = output_path.with_suffix('.tmp')
+            test_file.touch()
+            test_file.unlink()  # Remove test file
+        except PermissionError:
+            raise PermissionError(f"No write permission for {output_path}")
+        
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"Invalid output path {output_file}: {e}")
+        raise
+
+
+def get_platform_temp_dir() -> Path:
+    """Get platform-appropriate temporary directory."""
+    if IS_WINDOWS:
+        temp_dir = Path(os.getenv('TEMP', Path.home() / 'AppData' / 'Local' / 'Temp'))
+    elif IS_MACOS:
+        temp_dir = Path('/tmp')
+    else:  # Linux and others
+        temp_dir = Path(os.getenv('TMPDIR', '/tmp'))
+    
+    return temp_dir / 'aitextextractor'
+
+
+# ============================
 # PERFORMANCE TESTING
 # ============================
 
@@ -507,11 +640,20 @@ def benchmark_optimizations(test_files: List[str]) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Benchmark results
     """
-    from config import update_performance_config
+    try:
+        from config import update_performance_config
+    except ImportError:
+        logger.warning("Could not import performance config for benchmarking")
+        return {'error': 'Configuration not available'}
     
     logger.info(f"🚀 Benchmarking FIXED optimized workflow with {len(test_files)} files")
+    logger.info(f"Platform: {platform.system()}")
     
-    results = {}
+    results = {
+        'platform': platform.system(),
+        'python_version': sys.version,
+        'test_files_count': len(test_files)
+    }
     
     # Test with multiprocessing disabled
     original_config = get_performance_config().copy()
@@ -568,6 +710,7 @@ def benchmark_optimizations(test_files: List[str]) -> Dict[str, Any]:
     update_performance_config(original_config)
     
     logger.info("🚀 FIXED Enhanced benchmark results:")
+    logger.info(f"  Platform: {results['platform']}")
     logger.info(f"  Sequential: {results['sequential']['time']:.2f}s ({results['sequential']['files_per_second']:.2f} files/sec)")
     logger.info(f"  Parallel: {results['parallel']['time']:.2f}s ({results['parallel']['files_per_second']:.2f} files/sec)")
     logger.info(f"  Speedup: {results['speedup']:.2f}x")
@@ -589,6 +732,7 @@ def test_feature_organization():
         categories = get_feature_category_info()
         
         logger.info(f"🚀 FIXED Feature organization test:")
+        logger.info(f"  Platform: {platform.system()}")
         logger.info(f"  Total columns: {len(columns)}")
         logger.info(f"  Categories: {len(categories)}")
         
@@ -632,13 +776,13 @@ def monitor_workflow_performance(workflow_instance: OptimizedWorkflow) -> Dict[s
     """
     try:
         import psutil
-        import threading
         
         metrics = {
             'cpu_usage': [],
             'memory_usage': [],
             'processing_speed': [],
-            'timestamps': []
+            'timestamps': [],
+            'platform': platform.system()
         }
         
         def collect_metrics():
@@ -668,7 +812,7 @@ def monitor_workflow_performance(workflow_instance: OptimizedWorkflow) -> Dict[s
         
     except ImportError:
         logger.warning("psutil not available for performance monitoring")
-        return {}
+        return {'platform': platform.system(), 'error': 'psutil not available'}
     except Exception as e:
         logger.error(f"Error setting up performance monitoring: {e}")
-        return {}
+        return {'platform': platform.system(), 'error': str(e)}
