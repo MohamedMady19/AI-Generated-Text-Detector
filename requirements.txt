@@ -1,91 +1,127 @@
-# AI Text Feature Extractor - Updated Requirements
-# Core dependencies for the enhanced version with preprocessing and analysis
+# Enhanced AI-Generated Text Detector Requirements
+# Updated for large file support and custom PHD implementation
 
-# Essential NLP and text processing
+# Core NLP Processing
 spacy>=3.4.0
+textblob>=0.17.0
+textstat>=0.7.0
+
+# Scientific Computing (Required for PHD implementation)
 numpy>=1.21.0
 scipy>=1.7.0
+scikit-learn>=1.0.0
+
+# Machine Learning Features
+sklearn>=0.0
+
+# File Processing
 pandas>=1.3.0
+python-docx>=0.8.11
+PyPDF2>=2.0.0
+chardet>=4.0.0
 
-# Text analysis libraries
-textblob>=0.17.1
-textstat>=0.7.3
-nltk>=3.8
+# Text Processing and Feature Extraction
+nltk>=3.7
+gensim>=4.0.0
 
-# Visualization and analysis
+# Enhanced GUI Support
+tkinter-tooltip>=2.2.0
+
+# Progress and Performance Monitoring
+tqdm>=4.62.0
+psutil>=5.8.0
+
+# Data Visualization (Optional but recommended)
 matplotlib>=3.5.0
 seaborn>=0.11.0
+plotly>=5.0.0
 
-# File processing
-python-docx>=0.8.11
-PyPDF2>=2.10.0
+# Memory Management
+memory-profiler>=0.60.0
+
+# Configuration and Logging
+pyyaml>=6.0
+colorlog>=6.0.0
+
+# File Format Support
 openpyxl>=3.0.9
+xlrd>=2.0.1
 
-# Optional but recommended for enhanced analysis
-scikit-learn>=1.0.0  # For advanced statistical analysis, PCA, t-SNE
-plotly>=5.0.0        # For interactive visualizations (future enhancement)
-
-# Development and testing (optional)
+# Testing and Development
 pytest>=6.0.0
 pytest-cov>=3.0.0
+black>=22.0.0
+flake8>=4.0.0
 
-# Data processing utilities
-unicodedata2>=14.0.0  # For robust Unicode normalization
-chardet>=4.0.0        # For character encoding detection
+# Threading and Concurrency
+concurrent-futures>=3.1.1
 
-# System and performance
-psutil>=5.8.0         # For system resource monitoring
-tqdm>=4.64.0          # For progress bars in console mode
+# Enhanced Error Handling
+traceback2>=1.4.0
 
-# Enhanced file format support (optional)
-xlrd>=2.0.0           # For older Excel files
-python-magic>=0.4.24  # For file type detection (Linux/Mac)
+# JSON and Data Serialization
+ujson>=5.0.0
 
-# Statistical analysis enhancements (optional)
-statsmodels>=0.13.0   # For advanced statistical tests
-pingouin>=0.5.0       # For effect size calculations
+# Enhanced Text Analysis
+wordcloud>=1.8.0
+langdetect>=1.0.9
 
-# Installation Notes:
-# 1. Install spaCy model after installing spacy:
-#    python -m spacy download en_core_web_sm
-#
-# 2. Download NLTK data (will be done automatically on first run):
-#    python -c "import nltk; nltk.download('stopwords')"
-#
-# 3. For Windows users, you may need Visual C++ Build Tools for some packages
-#
-# 4. Optional packages can be skipped if you only need basic functionality:
-#    - scikit-learn: Advanced analysis features
-#    - plotly: Interactive visualizations
-#    - statsmodels, pingouin: Advanced statistical tests
-#    - python-magic: Better file type detection
-#
-# 5. Minimum Python version: 3.8+
+# PHD Implementation Dependencies
+threadpoolctl>=3.0.0
 
-# Core packages (required)
-# spacy
-# numpy
-# scipy
-# pandas
-# textblob
-# textstat
-# matplotlib
-# seaborn
-# python-docx
-# PyPDF2
+# Optional GPU Support (for advanced features)
+# Uncomment if GPU acceleration is needed
+# torch>=1.10.0
+# transformers>=4.15.0
 
-# Enhanced packages (recommended)
-# scikit-learn
-# nltk
-# psutil
-# unicodedata2
+# Development Tools (Optional)
+# jupyter>=1.0.0
+# ipython>=7.0.0
 
-# Optional packages (for full feature set)
-# plotly
-# statsmodels
-# pingouin
-# python-magic
-# openpyxl
-# xlrd
-# chardet
-# tqdm
+# Performance Profiling (Optional)
+# line-profiler>=3.0.0
+# py-spy>=0.3.0
+
+# Additional Text Processing
+regex>=2022.1.18
+ftfy>=6.0.0
+
+# Enhanced GUI Theme Support
+tkinter-themes>=0.2.0
+
+# File System Utilities
+pathlib2>=2.3.0
+send2trash>=1.8.0
+
+# Enhanced Logging
+rich>=12.0.0
+
+# Memory-Efficient Processing
+dask>=2022.1.0
+
+# Database Support (for large-scale processing)
+sqlite3
+
+# HTTP/Web Support (for future web interface)
+requests>=2.27.0
+flask>=2.0.0
+
+# Configuration Management
+configparser>=5.2.0
+python-dotenv>=0.19.0
+
+# Advanced Statistics
+statsmodels>=0.13.0
+
+# Enhanced Data Types
+typing-extensions>=4.0.0
+
+# Platform-Specific Dependencies
+# Windows
+pywin32>=227; sys_platform == "win32"
+
+# macOS
+pyobjc>=8.0; sys_platform == "darwin"
+
+# Linux-specific packages
+python3-tk; sys_platform == "linux"

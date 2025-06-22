@@ -1,738 +1,134 @@
 """
-Configuration settings for the AI Text Feature Extractor.
-🚀 COMPLETE FIXED VERSION with all required components including missing ERROR_MESSAGES
-✅ FIXES: Added missing error messages, fixed validation settings, enhanced performance config
-✅ CROSS-PLATFORM FIXES: pathlib paths, platform detection, Linux GUI compatibility
+Enhanced Configuration for AI Text Feature Extractor
+Updated to handle larger files and extended processing times
 """
 
-import os
-import sys
-import platform
-import multiprocessing
-from pathlib import Path
-
-# ============================
-# PLATFORM DETECTION
-# ============================
-
-IS_WINDOWS = platform.system() == 'Windows'
-IS_LINUX = platform.system() == 'Linux'
-IS_MACOS = platform.system() == 'Darwin'
-PLATFORM_NAME = platform.system()
-
-# ============================
-# CROSS-PLATFORM PATHS
-# ============================
-
-# Get platform-appropriate paths
-def get_default_paths():
-    """Get default paths based on platform."""
-    home_dir = Path.home()
-    
-    if IS_WINDOWS:
-        app_data = Path(os.getenv('APPDATA', home_dir / 'AppData' / 'Roaming'))
-        data_dir = app_data / 'AITextExtractor'
-    elif IS_MACOS:
-        data_dir = home_dir / 'Library' / 'Application Support' / 'AITextExtractor'
-    else:  # Linux and other Unix-like systems
-        data_dir = home_dir / '.local' / 'share' / 'aitextextractor'
-    
-    # Ensure directory exists
-    data_dir.mkdir(parents=True, exist_ok=True)
-    
-    return {
-        'data_dir': data_dir,
-        'output_file': data_dir / 'feature_output.csv',
-        'log_file': data_dir / 'text_extractor.log',
-        'cache_dir': data_dir / 'cache'
-    }
-
-# Get platform-specific paths
-DEFAULT_PATHS = get_default_paths()
-
-# ============================
-# PLATFORM-SPECIFIC GUI SETTINGS
-# ============================
-
-def get_gui_settings():
-    """Get GUI settings optimized for current platform."""
-    base_settings = {
-        'WINDOW_SIZE': '1200x800',
-        'TREE_HEIGHT': 8,
-        'LOG_HEIGHT': 8,
-        'MIN_WINDOW_SIZE': '800x600'
-    }
-    
-    if IS_WINDOWS:
-        base_settings.update({
-            'DEFAULT_FONT': ('Segoe UI', 9),
-            'MONOSPACE_FONT': ('Consolas', 9),
-            'TREE_FONT': ('Segoe UI', 9),
-            'BUTTON_PADDING': 5,
-            'SCROLLBAR_WIDTH': 20
-        })
-    elif IS_MACOS:
-        base_settings.update({
-            'DEFAULT_FONT': ('SF Pro Text', 13),
-            'MONOSPACE_FONT': ('SF Mono', 12),
-            'TREE_FONT': ('SF Pro Text', 12),
-            'BUTTON_PADDING': 8,
-            'SCROLLBAR_WIDTH': 15
-        })
-    else:  # Linux
-        base_settings.update({
-            'DEFAULT_FONT': ('DejaVu Sans', 9),
-            'MONOSPACE_FONT': ('DejaVu Sans Mono', 9),
-            'TREE_FONT': ('DejaVu Sans', 9),
-            'BUTTON_PADDING': 4,
-            'SCROLLBAR_WIDTH': 16,
-            'USE_TTK_THEMES': True,  # Use themed widgets on Linux
-            'THEME': 'clam'  # Better looking theme for Linux
-        })
-    
-    return base_settings
-
-# ============================
-# CORE CONFIGURATION
-# ============================
-
 CONFIG = {
-    # Platform information
-    'PLATFORM': PLATFORM_NAME,
-    'IS_WINDOWS': IS_WINDOWS,
-    'IS_LINUX': IS_LINUX,
-    'IS_MACOS': IS_MACOS,
+    # Text processing - ENHANCED for large files
+    'MIN_TEXT_LENGTH': 10,  # Minimum text length for analysis
+    'MAX_FILE_SIZE_MB': 1024,  # Increased to 1 GB (1024 MB)
     
-    # Output settings - Using pathlib
-    'CSV_OUTPUT_FILE': str(DEFAULT_PATHS['output_file']),
-    'LOG_FILE': str(DEFAULT_PATHS['log_file']),
-    'DATA_DIR': str(DEFAULT_PATHS['data_dir']),
-    'CACHE_DIR': str(DEFAULT_PATHS['cache_dir']),
-    'DEFAULT_ROUNDING_PRECISION': 4,
+    # Performance - ENHANCED for long processing
+    'CACHE_SIZE_LIMIT': 5000,  # Increased cache size for better performance
+    'PROCESSING_TIMEOUT': None,  # Unlimited processing time (set to None)
+    'PROCESSING_TIMEOUT_PER_PARAGRAPH': 600,  # 10 minutes per paragraph max
+    'MEMORY_CLEANUP_INTERVAL': 1000,  # Clean memory every 1000 paragraphs
     
-    # Text processing settings
-    'MIN_PARAGRAPH_LENGTH': 50,
-    'MAX_PARAGRAPH_LENGTH': 5000,
-    'MINIMUM_WORDS_FOR_ANALYSIS': 10,
-    'MIN_TEXT_LENGTH': 10,  # Added missing key
+    # Output
+    'CSV_OUTPUT_FILE': 'feature_output.csv',
+    'LOG_LEVEL': 'INFO',
+    'ENABLE_PROGRESS_LOGGING': True,  # Enhanced progress logging for large files
+    'LOG_EVERY_N_PARAGRAPHS': 100,  # Log progress every 100 paragraphs
     
-    # Feature extraction parameters
-    'MINIMUM_WORDS_FOR_NGRAMS': 10,
-    'MINIMUM_WORDS_FOR_MTLD': 50,
-    'LONG_WORD_THRESHOLD': 7,
+    # Feature extraction
+    'EXTRACT_ALL_FEATURES': True,
+    'FEATURE_CATEGORIES': ['all'],
     
-    # Lexical diversity parameters
-    'MSTTR_SEGMENT_SIZE': 50,
-    'MTLD_THRESHOLD': 0.72,
-    'VOCD_SAMPLES': 3,
-    'VOCD_SIZES': [35, 40, 45, 50],
+    # Text cleaning - NEW section for custom cleaning
+    'USE_CUSTOM_TEXT_CLEANING': True,  # Enable custom text cleaning
+    'TEXT_CLEANING_DEBUG_MODE': False,  # Set to True for debugging cleaning process
+    'SAVE_CLEANING_REPORTS': True,  # Save cleaning debug reports
     
-    # Topological features (PH-dimension) - OPTIMIZED
-    'PHD_MIN_SENTENCES': 10,
-    'PHD_ALPHA': 1.0,
-    'PHD_RERUNS': 2,  # Reduced from 3 for performance
-    'PHD_N_POINTS': 5,  # Reduced from 7 for performance
-    'PHD_N_POINTS_MIN': 3,
-    'PHD_MIN_POINTS': 30,  # Reduced from 50 for performance
-    'PHD_MAX_POINTS': 100,  # Reduced from 512 for performance
-    'PHD_POINT_JUMP': 20,  # Reduced from 40 for performance
-    'ENABLE_TOPOLOGICAL_FEATURES': True,
-    'TOPOLOGICAL_TIMEOUT': 10,  # 10 second timeout
+    # PHD Features - NEW section for custom PHD implementation
+    'USE_CUSTOM_PHD': True,  # Use custom PHD implementation
+    'PHD_ALPHA': 1.0,  # Alpha parameter for PHD calculation
+    'PHD_METRIC': 'euclidean',  # Distance metric
+    'PHD_N_RERUNS': 3,  # Number of restarts
+    'PHD_N_POINTS': 7,  # Number of subsamples
+    'PHD_N_POINTS_MIN': 3,  # Minimum subsamples for large clouds
+    'PHD_MIN_POINTS': 50,  # Minimum points for PHD calculation
+    'PHD_MAX_POINTS': 512,  # Maximum points for PHD calculation
+    'PHD_POINT_JUMP': 40,  # Step between subsamples
     
-    # GUI settings - Platform-specific
-    'GUI': get_gui_settings(),
+    # Large file handling - NEW section
+    'ENABLE_CHUNKED_PROCESSING': True,  # Process large files in chunks
+    'CHUNK_SIZE_PARAGRAPHS': 1000,  # Process 1000 paragraphs at a time
+    'ENABLE_MEMORY_MONITORING': True,  # Monitor memory usage
+    'MAX_MEMORY_USAGE_GB': 8,  # Maximum memory usage before cleanup
     
-    # File processing - FIXED
+    # Error handling and recovery - NEW section
+    'CONTINUE_ON_ERROR': True,  # Continue processing if individual paragraphs fail
+    'SAVE_FAILED_PARAGRAPHS': True,  # Save paragraphs that failed processing
+    'RETRY_FAILED_PARAGRAPHS': True,  # Retry failed paragraphs once
+    'MAX_RETRIES': 2,  # Maximum retry attempts per paragraph
+}
+
+# GUI settings - ENHANCED for large file processing
+GUI_CONFIG = {
+    'WINDOW_SIZE': '1200x900',  # Larger window for better visibility
+    'THEME': 'vista',
+    'LOG_HEIGHT': 12,  # Increased log area height
+    'TREE_HEIGHT': 15,  # Increased file list height
+    'PROGRESS_UPDATE_INTERVAL': 100,  # Update progress every 100ms
+    'ENABLE_CANCEL_BUTTON': True,  # Allow cancellation of long operations
+    'SHOW_MEMORY_USAGE': True,  # Show memory usage in GUI
+    'SHOW_PROCESSING_SPEED': True,  # Show paragraphs per second
+    'AUTO_SCROLL_LOG': True,  # Auto-scroll log for long operations
+}
+
+# File type settings - ENHANCED
+FILE_CONFIG = {
     'SUPPORTED_EXTENSIONS': ['.txt', '.csv', '.docx', '.pdf'],
-    'SUPPORTED_FORMATS': ['.txt', '.csv', '.docx', '.pdf'],  # Added missing key
-    'MAX_FILE_SIZE_MB': 50,
-    'DEFAULT_ENCODING': 'utf-8',
-    
-    # spaCy model configuration - FIXED
-    'SPACY_MODEL': 'en_core_web_sm',  # Added missing key
-    
-    # Default sources for classification
-    'DEFAULT_SOURCES': [
-        'ChatGPT', 'GPT-4', 'Claude', 'Bard', 'Human Writing', 
-        'Academic Paper', 'News Article', 'Blog Post', 'Social Media',
-        'Technical Documentation', 'Creative Writing', 'Other'
-    ],
-    
-    # Feature organization settings
-    'ENABLE_FEATURE_ORGANIZATION': True,
-    'ENABLE_PERFORMANCE_OPTIMIZATION': True,
-    'ENABLE_REAL_TIME_PROGRESS': True,
-    
-    # Performance optimization settings - ENHANCED
-    'PERFORMANCE': {
-        'USE_PARALLEL_EXTRACTION': True,
-        'MAX_WORKERS': min(4, multiprocessing.cpu_count()),
-        'SPACY_BATCH_SIZE': 50,
-        'SPACY_MAX_LENGTH': 2000000,  # Added missing key
-        'MEMORY_LIMIT_GB': 4.0,
-        'PROGRESS_UPDATE_INTERVAL': 0.01,  # Reduced from 0.1 for smoother progress
-        'DISABLE_SPACY_COMPONENTS': ['ner', 'textcat'],  # Keep parser for dependencies
-        'USE_VECTORIZED_FEATURES': True,
-        'ENABLE_MEMORY_OPTIMIZATION': True,
-        'USE_MULTIPROCESSING': True,  # For backward compatibility
-        'CACHE_CLEANUP_INTERVAL': 100,
-        'MAX_MEMORY_USAGE_PERCENT': 80,
-        'FORCE_GARBAGE_COLLECTION': True
-    }
+    'ENCODING_ATTEMPTS': ['utf-8', 'latin-1', 'cp1252', 'utf-16'],  # Try multiple encodings
+    'PDF_MAX_PAGES': None,  # No limit on PDF pages (was 1000)
+    'DOCX_MAX_PARAGRAPHS': None,  # No limit on DOCX paragraphs
+    'CSV_MAX_ROWS': None,  # No limit on CSV rows
+    'ENABLE_FILE_VALIDATION': True,  # Validate files before processing
 }
 
-# Add backward compatibility for GUI settings
-CONFIG.update({
-    'GUI_WINDOW_SIZE': CONFIG['GUI']['WINDOW_SIZE'],
-    'GUI_TREE_HEIGHT': CONFIG['GUI']['TREE_HEIGHT'],
-    'GUI_LOG_HEIGHT': CONFIG['GUI']['LOG_HEIGHT']
-})
-
-# ============================
-# ERROR MESSAGES - COMPLETE SET
-# ============================
-
-ERROR_MESSAGES = {
-    # File processing errors
-    'FILE_NOT_FOUND': 'File not found: {file_path}',
-    'FILE_TOO_LARGE': 'File too large (>{max_size}MB): {size_mb:.1f}MB for {file_path}',
-    'FILE_EMPTY': 'File is empty: {file_path}',
-    'FILE_ENCODING_ERROR': 'Could not read file with encoding {encoding}: {file_path}',
-    'UNSUPPORTED_FILE_TYPE': 'Unsupported file type: {file_path}',
-    'UNSUPPORTED_FORMAT': 'Unsupported file format: {format}',
-    'FILE_NOT_REGULAR': 'Path is not a regular file',
-    
-    # Text processing errors
-    'TEXT_TOO_SHORT': 'Text too short (minimum {min_length} characters, got {actual_length})',
-    'TEXT_TOO_LONG': 'Text too long (maximum {max_length} characters)',
-    'TEXT_EMPTY': 'Text is empty or contains only whitespace',
-    'TEXT_INSUFFICIENT_CONTENT': 'Text has insufficient alphabetic content for analysis',
-    'INVALID_TEXT_INPUT': 'Invalid text input: {reason}',
-    
-    # Feature extraction errors
-    'FEATURE_EXTRACTION_FAILED': 'Feature extraction failed for {category}: {error}',
-    'INSUFFICIENT_TEXT': 'Insufficient text for analysis (minimum {min_words} words required)',
-    'SPACY_MODEL_ERROR': 'spaCy model error: {error}',
-    'SPACY_MODEL_MISSING': 'spaCy model "{model}" not found. Please install with: python -m spacy download {model}',
-    'NLTK_DATA_ERROR': 'NLTK data error: {error}',
-    
-    # Configuration errors
-    'INVALID_CONFIG': 'Invalid configuration: {setting}',
-    'MISSING_DEPENDENCY': 'Missing required dependency: {dependency}',
-    'INITIALIZATION_FAILED': 'Initialization failed: {component}',
-    
-    # Processing errors
-    'PROCESSING_CANCELLED': 'Processing was cancelled by user',
-    'PROCESSING_TIMEOUT': 'Processing timed out after {timeout} seconds',
-    'MEMORY_ERROR': 'Insufficient memory for processing',
-    'OUTPUT_ERROR': 'Error saving output: {error}',
-    
-    # GUI errors
-    'GUI_INITIALIZATION_FAILED': 'GUI initialization failed: {error}',
-    'INVALID_FILE_SELECTION': 'Invalid file selection',
-    'NO_FILES_SELECTED': 'No files selected for processing',
-    
-    # Additional required error messages
-    'PANDAS_REQUIRED': 'pandas is required for CSV file processing. Please install with: pip install pandas'
-}
-
-# ============================
-# VALIDATION SETTINGS
-# ============================
-
-VALIDATION_SETTINGS = {
-    'MIN_TEXT_LENGTH': 10,
-    'MAX_TEXT_LENGTH': 1000000,  # 1MB of text
-    'MIN_PARAGRAPH_LENGTH': CONFIG['MIN_PARAGRAPH_LENGTH'],
-    'MAX_PARAGRAPH_LENGTH': CONFIG['MAX_PARAGRAPH_LENGTH'],
-    'ALLOWED_ENCODINGS': ['utf-8', 'utf-16', 'latin-1', 'cp1252'],
-    'SUPPORTED_ENCODINGS': ['utf-8', 'utf-16', 'latin-1', 'cp1252'],  # Added alias
-    'REQUIRED_SPACY_MODEL': 'en_core_web_sm',
-}
-
-# ============================
-# LOGGING CONFIGURATION
-# ============================
-
+# Logging configuration - ENHANCED
 LOGGING_CONFIG = {
-    'level': 'INFO',
-    'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    'file': str(DEFAULT_PATHS['log_file']),  # Use pathlib path
-    'max_size_mb': 10,
-    'backup_count': 5
+    'LOG_TO_FILE': True,
+    'LOG_FILE': 'processing.log',
+    'LOG_MAX_SIZE_MB': 100,  # 100 MB log file max
+    'LOG_BACKUP_COUNT': 5,  # Keep 5 backup log files
+    'LOG_FORMAT': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    'CONSOLE_LOG_LEVEL': 'INFO',
+    'FILE_LOG_LEVEL': 'DEBUG',
 }
 
-# ============================
-# DISCOURSE MARKERS
-# ============================
-
-DISCOURSE_MARKERS = {
-    'additive': [
-        'also', 'and', 'besides', 'furthermore', 'in addition', 'moreover', 
-        'additionally', 'plus', 'as well as', 'not only', 'along with'
-    ],
-    'adversative': [
-        'but', 'however', 'nevertheless', 'nonetheless', 'yet', 'still',
-        'though', 'although', 'even though', 'despite', 'in spite of',
-        'on the other hand', 'conversely', 'whereas', 'while'
-    ],
-    'causal': [
-        'because', 'since', 'as', 'for', 'so', 'therefore', 'thus',
-        'consequently', 'as a result', 'hence', 'accordingly', 'due to',
-        'owing to', 'on account of', 'for this reason'
-    ],
-    'temporal': [
-        'when', 'while', 'before', 'after', 'during', 'meanwhile',
-        'then', 'next', 'subsequently', 'previously', 'earlier',
-        'later', 'afterwards', 'eventually', 'finally', 'until',
-        'since then', 'at the same time', 'in the meantime'
-    ]
+# Performance monitoring - NEW section
+PERFORMANCE_CONFIG = {
+    'ENABLE_PROFILING': False,  # Enable performance profiling
+    'PROFILE_OUTPUT_FILE': 'performance_profile.txt',
+    'MONITOR_MEMORY': True,  # Monitor memory usage
+    'MONITOR_CPU': True,  # Monitor CPU usage
+    'PERFORMANCE_LOG_INTERVAL': 300,  # Log performance every 5 minutes
 }
 
-# ============================
-# FALLBACK DATA
-# ============================
+def get_memory_limit():
+    """Get memory limit in bytes"""
+    return CONFIG.get('MAX_MEMORY_USAGE_GB', 8) * 1024 * 1024 * 1024
 
-# Fallback stop words if NLTK is not available
-FALLBACK_STOP_WORDS = {
-    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-    'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-    'to', 'was', 'were', 'will', 'with', 'the', 'this', 'but', 'they',
-    'have', 'had', 'what', 'said', 'each', 'which', 'she', 'do',
-    'how', 'their', 'if', 'up', 'out', 'many', 'then', 'them'
-}
+def get_processing_timeout():
+    """Get processing timeout in seconds (None for unlimited)"""
+    return CONFIG.get('PROCESSING_TIMEOUT')
 
-# ============================
-# PERFORMANCE CONFIGURATION
-# ============================
+def should_use_chunked_processing():
+    """Check if chunked processing should be used"""
+    return CONFIG.get('ENABLE_CHUNKED_PROCESSING', True)
 
-def get_performance_config():
-    """Get performance configuration settings."""
-    return CONFIG['PERFORMANCE'].copy()
-
-
-def update_performance_config(updates: dict):
-    """Update performance configuration settings."""
-    CONFIG['PERFORMANCE'].update(updates)
-
-
-def get_system_recommendations():
-    """Get performance recommendations based on system capabilities."""
-    try:
-        import psutil
-        
-        # Get system info
-        cpu_count = multiprocessing.cpu_count()
-        memory_gb = psutil.virtual_memory().total / (1024**3)
-        
-        recommendations = {
-            'max_workers': min(8, cpu_count),
-            'batch_size': 50,
-            'memory_limit_gb': max(2, memory_gb * 0.5),  # Use 50% of available memory
-            'use_parallel': cpu_count >= 2 and memory_gb >= 4
-        }
-        
-        # Adjust for lower-end systems
-        if memory_gb < 8:
-            recommendations.update({
-                'max_workers': min(2, cpu_count),
-                'batch_size': 25,
-                'memory_limit_gb': 2
-            })
-        
-        # Adjust for high-end systems
-        if memory_gb >= 16 and cpu_count >= 8:
-            recommendations.update({
-                'max_workers': min(8, cpu_count),
-                'batch_size': 100,
-                'memory_limit_gb': 8
-            })
-        
-        return recommendations
-        
-    except ImportError:
-        # psutil not available, use conservative defaults
-        return {
-            'max_workers': min(2, multiprocessing.cpu_count()),
-            'batch_size': 25,
-            'memory_limit_gb': 2.0,
-            'use_parallel': multiprocessing.cpu_count() >= 2
-        }
-
-
-def auto_configure_performance():
-    """Automatically configure performance settings based on system."""
-    try:
-        recommendations = get_system_recommendations()
-        
-        # Update performance config with recommendations
-        CONFIG['PERFORMANCE'].update({
-            'MAX_WORKERS': recommendations['max_workers'],
-            'SPACY_BATCH_SIZE': recommendations['batch_size'],
-            'MEMORY_LIMIT_GB': recommendations['memory_limit_gb'],
-            'USE_PARALLEL_EXTRACTION': recommendations['use_parallel']
-        })
-        
-        return True
-        
-    except Exception:
-        # Use conservative defaults
-        CONFIG['PERFORMANCE'].update({
-            'MAX_WORKERS': min(2, multiprocessing.cpu_count()),
-            'SPACY_BATCH_SIZE': 25,
-            'MEMORY_LIMIT_GB': 2.0,
-            'USE_PARALLEL_EXTRACTION': multiprocessing.cpu_count() >= 2
-        })
-        
-        return False
-
-
-# ============================
-# FEATURE CATEGORY CONFIGURATION
-# ============================
-
-def get_feature_categories():
-    """Get feature category definitions for organized output."""
-    return {
-        'basic': {
-            'name': 'Basic Text Metrics',
-            'description': 'Character, word, and sentence counts',
-            'color': '#4CAF50'
-        },
-        'lexical': {
-            'name': 'Lexical Diversity',
-            'description': 'Vocabulary richness and word patterns',
-            'color': '#2196F3'
-        },
-        'structural': {
-            'name': 'Structural Features',
-            'description': 'Sentence and paragraph structure',
-            'color': '#FF9800'
-        },
-        'punctuation': {
-            'name': 'Punctuation Patterns',
-            'description': 'Punctuation usage and variety',
-            'color': '#9C27B0'
-        },
-        'linguistic': {
-            'name': 'Linguistic Features',
-            'description': 'POS tags, sentiment, and language patterns',
-            'color': '#E91E63'
-        },
-        'discourse': {
-            'name': 'Discourse Markers',
-            'description': 'Connectives and discourse relationships',
-            'color': '#00BCD4'
-        },
-        'syntactic': {
-            'name': 'Syntactic Complexity',
-            'description': 'Grammatical complexity and structure',
-            'color': '#795548'
-        },
-        'readability': {
-            'name': 'Readability Metrics',
-            'description': 'Text difficulty and readability scores',
-            'color': '#607D8B'
-        },
-        'errors': {
-            'name': 'Error Analysis',
-            'description': 'Potential errors and irregularities',
-            'color': '#F44336'
-        },
-        'capitalization': {
-            'name': 'Capitalization Patterns',
-            'description': 'Capital letter usage patterns',
-            'color': '#CDDC39'
-        },
-        'topological': {
-            'name': 'Topological Features',
-            'description': 'Advanced geometric and topological measures',
-            'color': '#3F51B5'
-        }
-    }
-
-
-# ============================
-# CROSS-PLATFORM PATH UTILITIES
-# ============================
-
-def get_safe_path(path_str):
-    """Convert string path to Path object safely."""
-    return Path(path_str).resolve()
-
-
-def ensure_directory(path):
-    """Ensure directory exists, create if needed."""
-    path_obj = Path(path)
-    path_obj.mkdir(parents=True, exist_ok=True)
-    return path_obj
-
-
-def get_output_path(filename=None):
-    """Get cross-platform output path."""
-    if filename is None:
-        return Path(CONFIG['CSV_OUTPUT_FILE'])
-    return Path(CONFIG['DATA_DIR']) / filename
-
-
-# ============================
-# VALIDATION AND SETUP
-# ============================
+def get_chunk_size():
+    """Get chunk size for processing"""
+    return CONFIG.get('CHUNK_SIZE_PARAGRAPHS', 1000)
 
 def validate_config():
-    """Validate configuration settings."""
+    """Validate configuration settings"""
     errors = []
-    warnings = []
     
-    # Check required directories using pathlib
-    output_path = Path(CONFIG['CSV_OUTPUT_FILE'])
-    output_dir = output_path.parent
-    
-    if not output_dir.exists():
-        try:
-            output_dir.mkdir(parents=True, exist_ok=True)
-        except Exception as e:
-            errors.append(f"Cannot create output directory: {e}")
-    
-    # Check data directory
-    data_dir = Path(CONFIG['DATA_DIR'])
-    try:
-        data_dir.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        errors.append(f"Cannot create data directory: {e}")
-    
-    # Check cache directory
-    cache_dir = Path(CONFIG['CACHE_DIR'])
-    try:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        warnings.append(f"Cannot create cache directory: {e}")
-    
-    # Validate performance settings
-    perf_config = CONFIG['PERFORMANCE']
-    
-    if perf_config['MAX_WORKERS'] < 1:
-        warnings.append("MAX_WORKERS should be at least 1")
-        perf_config['MAX_WORKERS'] = 1
-    
-    if perf_config['MAX_WORKERS'] > multiprocessing.cpu_count():
-        warnings.append(f"MAX_WORKERS ({perf_config['MAX_WORKERS']}) exceeds CPU count ({multiprocessing.cpu_count()})")
-    
-    if perf_config['SPACY_BATCH_SIZE'] < 1:
-        warnings.append("SPACY_BATCH_SIZE should be at least 1")
-        perf_config['SPACY_BATCH_SIZE'] = 1
-    
-    if perf_config['MEMORY_LIMIT_GB'] < 1:
-        warnings.append("MEMORY_LIMIT_GB should be at least 1GB")
-        perf_config['MEMORY_LIMIT_GB'] = 1.0
-    
-    # Check file size limits
     if CONFIG['MAX_FILE_SIZE_MB'] < 1:
-        warnings.append("MAX_FILE_SIZE_MB should be at least 1MB")
-        CONFIG['MAX_FILE_SIZE_MB'] = 1
+        errors.append("MAX_FILE_SIZE_MB must be at least 1")
     
-    # Validate text processing parameters
-    if CONFIG['MIN_PARAGRAPH_LENGTH'] >= CONFIG['MAX_PARAGRAPH_LENGTH']:
-        errors.append("MIN_PARAGRAPH_LENGTH must be less than MAX_PARAGRAPH_LENGTH")
+    if CONFIG.get('PHD_ALPHA', 1.0) <= 0:
+        errors.append("PHD_ALPHA must be positive")
     
-    # Log results
+    if CONFIG.get('CHUNK_SIZE_PARAGRAPHS', 1000) < 1:
+        errors.append("CHUNK_SIZE_PARAGRAPHS must be at least 1")
+    
     if errors:
-        import logging
-        logger = logging.getLogger(__name__)
-        for error in errors:
-            logger.error(f"Configuration error: {error}")
-        raise ValueError(f"Configuration validation failed: {'; '.join(errors)}")
+        raise ValueError("Configuration errors: " + "; ".join(errors))
     
-    if warnings:
-        import logging
-        logger = logging.getLogger(__name__)
-        for warning in warnings:
-            logger.warning(f"Configuration warning: {warning}")
-    
-    return len(errors) == 0
+    return True
 
-
-def setup_environment():
-    """Setup environment based on configuration."""
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    
-    try:
-        # Create necessary directories
-        ensure_directory(CONFIG['DATA_DIR'])
-        ensure_directory(CONFIG['CACHE_DIR'])
-        
-        # Auto-configure performance if enabled
-        if CONFIG.get('ENABLE_PERFORMANCE_OPTIMIZATION', True):
-            success = auto_configure_performance()
-            if success:
-                logger.info("Performance settings auto-configured based on system capabilities")
-            else:
-                logger.info("Using conservative performance settings (psutil not available)")
-        
-        # Log platform information
-        logger.info(f"Platform: {PLATFORM_NAME}")
-        logger.info(f"Python: {sys.version}")
-        logger.info(f"Data directory: {CONFIG['DATA_DIR']}")
-        
-        # Log current configuration
-        perf_config = get_performance_config()
-        logger.info(f"Performance configuration:")
-        logger.info(f"  Parallel extraction: {perf_config['USE_PARALLEL_EXTRACTION']}")
-        logger.info(f"  Max workers: {perf_config['MAX_WORKERS']}")
-        logger.info(f"  spaCy batch size: {perf_config['SPACY_BATCH_SIZE']}")
-        logger.info(f"  Memory limit: {perf_config['MEMORY_LIMIT_GB']}GB")
-        logger.info(f"  Organized features: {CONFIG.get('ENABLE_FEATURE_ORGANIZATION', True)}")
-        logger.info(f"  Real-time progress: {CONFIG.get('ENABLE_REAL_TIME_PROGRESS', True)}")
-        
-        return True
-        
-    except Exception as e:
-        logger.error(f"Environment setup failed: {e}")
-        return False
-
-
-# ============================
-# UTILITY FUNCTIONS
-# ============================
-
-def get_error_message(error_key: str, **kwargs) -> str:
-    """Get formatted error message."""
-    if error_key in ERROR_MESSAGES:
-        try:
-            return ERROR_MESSAGES[error_key].format(**kwargs)
-        except KeyError as e:
-            return f"Error message formatting failed for '{error_key}': missing parameter {e}"
-    else:
-        return f"Unknown error: {error_key}"
-
-
-def check_system_requirements():
-    """Check system requirements and return status."""
-    status = {
-        'platform': PLATFORM_NAME,
-        'python_version': sys.version_info,
-        'python_ok': sys.version_info >= (3, 8),
-        'warnings': [],
-        'errors': []
-    }
-    
-    # Check Python version
-    if not status['python_ok']:
-        status['errors'].append(f"Python 3.8+ required, found {sys.version_info.major}.{sys.version_info.minor}")
-    
-    # Check required modules
-    required_modules = ['spacy', 'numpy', 'scipy']
-    for module in required_modules:
-        try:
-            __import__(module)
-        except ImportError:
-            status['errors'].append(f"Required module missing: {module}")
-    
-    # Check optional modules
-    optional_modules = ['psutil', 'textblob', 'textstat']
-    for module in optional_modules:
-        try:
-            __import__(module)
-        except ImportError:
-            status['warnings'].append(f"Optional module missing: {module}")
-    
-    # Check spaCy model
-    try:
-        import spacy
-        spacy.load('en_core_web_sm')
-    except (ImportError, OSError):
-        status['errors'].append("spaCy English model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm")
-    
-    # Platform-specific checks
-    if IS_LINUX:
-        # Check for tkinter on Linux
-        try:
-            import tkinter
-        except ImportError:
-            status['errors'].append("tkinter not available. Install with: sudo apt-get install python3-tk")
-    
-    return status
-
-
-# ============================
-# INITIALIZATION
-# ============================
-
-# Auto-setup when module is imported
-try:
-    setup_environment()
-except Exception as e:
-    import logging
-    logging.getLogger(__name__).warning(f"Could not auto-setup environment: {e}")
-
-
-# Backward compatibility exports
-def get_config():
-    """Get the main configuration dictionary."""
-    return CONFIG.copy()
-
-
-def get_discourse_markers():
-    """Get discourse markers dictionary."""
-    return DISCOURSE_MARKERS.copy()
-
-
-def get_fallback_stop_words():
-    """Get fallback stop words set."""
-    return FALLBACK_STOP_WORDS.copy()
-
-
-def get_validation_settings():
-    """Get validation settings."""
-    return VALIDATION_SETTINGS.copy()
-
-
-def get_logging_config():
-    """Get logging configuration."""
-    return LOGGING_CONFIG.copy()
-
-
-# Version information
-__version__ = "2.0.1"  # Incremented for cross-platform fixes
-__config_version__ = "2.0.1"
-
-# Export main items
-__all__ = [
-    'CONFIG',
-    'ERROR_MESSAGES',
-    'VALIDATION_SETTINGS',
-    'LOGGING_CONFIG',
-    'DISCOURSE_MARKERS', 
-    'FALLBACK_STOP_WORDS',
-    'IS_WINDOWS',
-    'IS_LINUX',
-    'IS_MACOS',
-    'PLATFORM_NAME',
-    'get_performance_config',
-    'update_performance_config',
-    'get_system_recommendations',
-    'auto_configure_performance',
-    'get_feature_categories',
-    'validate_config',
-    'setup_environment',
-    'get_config',
-    'get_discourse_markers',
-    'get_fallback_stop_words',
-    'get_validation_settings',
-    'get_logging_config',
-    'get_error_message',
-    'check_system_requirements',
-    'get_safe_path',
-    'ensure_directory',
-    'get_output_path'
-]
-
-# ============================
-# CACHING CONFIGURATION
-# ============================
-
-CACHE_SIZE_LIMIT = 100  # Maximum number of cached spaCy documents
-CACHE_CLEANUP_THRESHOLD = 0.8  # Clean cache when 80% full
-ENABLE_CACHING = True  # Enable spaCy document caching
+# Validate configuration on import
+validate_config()

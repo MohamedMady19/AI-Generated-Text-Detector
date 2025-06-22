@@ -1,15 +1,31 @@
-# Project - AI Text Feature Extractor v2.0
+# Enhanced AI-Generated Text Detector
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+A comprehensive tool for extracting linguistic features from text files to help distinguish between AI-generated and human-written content, with advanced support for large files and custom feature implementations.
 
-A comprehensive tool for extracting linguistic features from text files to help distinguish between AI-generated and human-written content.
+## 🚀 New Enhanced Features
 
-## 🚀 Features
+### ✨ Major Improvements
 
-### 📊 Comprehensive Feature Extraction
-Extract **100+ linguistic features** including:
+- **🗂️ Large File Support**: Process files up to **1 GB** in size
+- **⏱️ Unlimited Processing Time**: No timeout restrictions for processing large datasets
+- **🧹 Custom Text Cleaning**: Exact implementation from advanced text cleaning methods
+- **📐 Custom PHD Features**: Persistent Homology Dimension implementation from GPTID project
+- **🧠 Enhanced Memory Management**: Efficient processing with automatic memory cleanup
+- **📊 Advanced Progress Tracking**: Real-time monitoring with detailed statistics
+- **⚡ Chunked Processing**: Intelligent handling of large files in manageable chunks
+- **🎯 Enhanced GUI**: Modern interface with tabbed layout and real-time monitoring
+
+### 🔧 Technical Enhancements
+
+- **Memory Monitoring**: Real-time memory usage tracking and automatic cleanup
+- **Cancellation Support**: Ability to cancel long-running operations
+- **Error Recovery**: Robust error handling with detailed logging
+- **Batch Processing**: Efficient processing of multiple large files
+- **Performance Profiling**: Built-in performance monitoring and optimization
+
+## 📋 Feature Overview
+
+### 🔍 Core Features (119+ linguistic features)
 
 - **📝 Sentence Structure**: Length metrics, variance analysis
 - **🔤 Part-of-Speech**: Frequency distributions of grammatical categories  
@@ -18,538 +34,422 @@ Extract **100+ linguistic features** including:
 - **📖 Readability Scores**: Flesch, Gunning Fog, SMOG, Coleman-Liau
 - **💬 Discourse Markers**: Connectives, transitions, logical relationships
 - **🔍 Error Analysis**: Grammar patterns, stylistic inconsistencies
-- **📐 Topological Features**: Persistent Homology Dimension analysis
+- **📐 Topological Features**: **Custom PHD implementation**
 - **⚡ Stop Words Analysis**: Function word usage patterns
 - **🔗 N-gram Patterns**: Bigram/trigram diversity and repetition
 
-### 📁 File Format Support
-- **Text files** (`.txt`)
-- **CSV files** (`.csv`) 
-- **Word documents** (`.docx`)
-- **PDF files** (`.pdf`)
+### 🗃️ Enhanced File Support
 
-### 🖥️ User-Friendly Interface
-- Intuitive GUI for batch processing
-- Real-time progress tracking with cancellation support
-- Detailed logging and error reporting
-- File statistics and metadata management
-- Context menus and keyboard shortcuts
+- **Text files** (`.txt`) - Up to 1 GB
+- **CSV files** (`.csv`) - Large datasets with automatic chunking
+- **Word documents** (`.docx`) - Complex documents with embedded content
+- **PDF files** (`.pdf`) - Multi-page documents with text extraction
 
-## 📦 Installation
+### 🎛️ Advanced Processing Features
+
+- **Chunked Processing**: Automatic handling of large files in memory-efficient chunks
+- **Progress Monitoring**: Real-time progress with ETA and speed calculations
+- **Memory Management**: Automatic cleanup and optimization for large datasets
+- **Error Recovery**: Continue processing even if individual files fail
+- **Cancellation Support**: Stop processing at any time with clean shutdown
+
+## 🛠️ Installation
 
 ### Prerequisites
-- **Python 3.8+** (recommended: Python 3.10+)
-- **pip** package manager
 
-### 🚀 Quick Install
+- **Python 3.8+** (Python 3.10+ recommended)
+- **8 GB RAM minimum** (16 GB+ recommended for large files)
+- **5 GB free disk space**
+
+### Quick Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Project.git
-cd Project
+git clone https://github.com/MohamedMady19/AI-Generated-Text-Detector.git
+cd AI-Generated-Text-Detector
+
+# Create virtual environment
+python -m venv enhanced_env
+source enhanced_env/bin/activate  # On Windows: enhanced_env\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Download required spaCy language model
+# Download spaCy model
 python -m spacy download en_core_web_sm
 
-# Run the application
-python main.py
+# Verify installation
+python main.py --test-phd --test-cleaning
 ```
 
-### 🔧 Alternative Installation Methods
+## 🚀 Usage
 
-#### Method 1: Full Installation with Optional Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-#### Method 2: Minimal Installation (Core Features Only)
-```bash
-pip install spacy numpy scipy textblob textstat
-python -m spacy download en_core_web_sm
-```
-
-#### Method 3: Development Installation
-```bash
-pip install -e .
-pip install -r requirements.txt
-```
-
-### 📋 Dependencies
-
-**Core (Required):**
-- `spacy` (≥3.4.0) - NLP processing
-- `numpy` (≥1.21.0) - Numerical computations
-- `scipy` (≥1.7.0) - Scientific computing
-- `textblob` (≥0.17.0) - Sentiment analysis
-- `textstat` (≥0.7.0) - Readability metrics
-
-**File Processing (Recommended):**
-- `pandas` (≥1.3.0) - CSV file handling
-- `python-docx` (≥0.8.11) - Word document processing
-- `PyPDF2` (≥2.0.0) - PDF text extraction
-
-**Enhanced Features (Optional):**
-- `scikit-learn` (≥1.0.0) - Feature normalization
-- `psutil` (≥5.8.0) - System monitoring
-
-## 🎯 Usage
-
-### 🖥️ GUI Application
+### 🖥️ GUI Mode (Recommended)
 
 ```bash
 python main.py
 ```
 
-### 📋 Step-by-Step Workflow
+**Enhanced GUI Features:**
+- **File Processing Tab**: Drag-and-drop file management with batch operations
+- **Configuration Tab**: Real-time settings adjustment
+- **Results Tab**: Interactive results viewing with statistics
+- **Logs Tab**: Live log monitoring with auto-scroll
 
-1. **🚀 Launch Application**
-   ```bash
-   python main.py
-   ```
-
-2. **📁 Add Files**
-   - Click "Browse Files" to select text files
-   - Supports multiple file selection
-   - Drag and drop support (if available)
-
-3. **🏷️ Configure Labels**
-   - Set each file as "AI Generated" or "Human Written"
-   - Apply labels to selected files or all files at once
-
-4. **📊 Set Sources**
-   - Specify the source: GPT, Claude, Gemini, Human, etc.
-   - Custom sources supported
-
-5. **⚡ Extract Features**
-   - Click "Extract Features from Files"
-   - Monitor real-time progress
-   - Cancel processing if needed
-
-6. **📄 View Results**
-   - Features automatically saved to `feature_output.csv`
-   - View processing logs and statistics
-
-### 💻 Command Line Options
+### 💻 Command Line Interface
 
 ```bash
-python main.py --help        # Show help information
-python main.py              # Start GUI application
+# Process single file
+python main.py --cli --files document.txt --output results.csv
+
+# Process multiple files with labels
+python main.py --cli --files *.txt --label "Human Written" --source "Human" --output human_results.csv
+
+# Process large files with custom settings
+python main.py --cli --files large_dataset.csv --output large_results.csv
 ```
 
-### 🔧 Programmatic API
+### 🧪 Testing Enhanced Features
 
-```python
-from features import extract_all_features
-from core import read_file_content, split_paragraphs
+```bash
+# Test Custom PHD Implementation
+python main.py --test-phd
 
-# Extract features from text
-text = "Your text here..."
-features = extract_all_features(text)
-print(f"Extracted {len(features)} features")
+# Test Custom Text Cleaning
+python main.py --test-cleaning
 
-# Process a file
-content = read_file_content("document.txt")
-paragraphs = split_paragraphs(content)
+# Test with custom text
+python main.py --test-phd --test-text "Your sample text here"
 
-for i, paragraph in enumerate(paragraphs):
-    features = extract_all_features(paragraph)
-    print(f"Paragraph {i+1}: {len(features)} features")
-```
-
-## 📊 Output Format
-
-The application generates a CSV file (`feature_output.csv`) with:
-
-| Column | Description | Example |
-|--------|-------------|---------|
-| `paragraph` | Original text content | "This is sample text..." |
-| `avg_sent_length_chars` | Average sentence length | 45.2 |
-| `flesch_reading_ease` | Readability score | 67.8 |
-| `type_token_ratio` | Lexical diversity | 0.234 |
-| `...` | 100+ other features | ... |
-| `is_AI` | Label (0=Human, 1=AI) | 1 |
-| `source` | Text source | "GPT" |
-
-### 📈 Example Output Structure
-```csv
-paragraph,avg_sent_length_chars,flesch_reading_ease,type_token_ratio,ph_dimension,is_AI,source
-"This is sample text from an AI model...",45.2,67.8,0.234,1.23,1,GPT
-"Human written content tends to vary more...",52.1,72.3,0.287,1.45,0,Human
-```
-
-## 🏗️ Project Structure
-
-```
-Project/
-├── main.py                     # 🚀 Application entry point
-├── config.py                   # ⚙️ Configuration settings
-├── requirements.txt            # 📋 Dependencies list
-├── setup.py                    # 📦 Package setup
-├── README.md                   # 📖 This file
-├── .gitignore                  # 🚫 Git ignore patterns
-├── core/                       # 🔧 Core utilities
-│   ├── __init__.py
-│   ├── nlp_utils.py           # 🧠 spaCy utilities and caching
-│   ├── validation.py          # ✅ Input validation
-│   └── file_processing.py     # 📁 File reading utilities
-├── features/                   # 🔍 Feature extraction modules
-│   ├── __init__.py
-│   ├── base.py               # 🏗️ Feature extraction framework
-│   ├── linguistic.py         # 🔤 Linguistic features
-│   ├── lexical.py            # 📚 Lexical diversity
-│   ├── syntactic.py          # 🌲 Syntactic complexity
-│   ├── structural.py         # 📝 Structural features
-│   └── topological.py        # 📐 Topological features
-└── gui/                       # 🖥️ GUI components
-    ├── __init__.py
-    ├── main_window.py         # 🪟 Main application window
-    ├── file_manager.py        # 📁 File management
-    └── progress.py            # 📊 Progress tracking
+# Show all available features
+python main.py --info
 ```
 
 ## ⚙️ Configuration
 
-### 🔧 Basic Configuration
-
-Edit `config.py` to customize application behavior:
+### 🔧 Enhanced Configuration Options
 
 ```python
+# config.py - Key enhanced settings
 CONFIG = {
-    # Text processing
-    'MIN_TEXT_LENGTH': 10,           # Minimum text length for analysis
-    'MAX_FILE_SIZE_MB': 100,         # Maximum file size limit
+    # Large file support
+    'MAX_FILE_SIZE_MB': 1024,  # 1 GB limit
+    'PROCESSING_TIMEOUT': None,  # Unlimited processing time
     
-    # Performance
-    'CACHE_SIZE_LIMIT': 2000,        # spaCy document cache size
-    'PROCESSING_TIMEOUT': 300,       # Max processing time per file (seconds)
+    # Custom implementations
+    'USE_CUSTOM_TEXT_CLEANING': True,  # Enable advanced text cleaning
+    'USE_CUSTOM_PHD': True,  # Enable custom PHD features
     
-    # Output
-    'CSV_OUTPUT_FILE': 'feature_output.csv',
-    'LOG_LEVEL': 'INFO',
+    # Memory management
+    'ENABLE_CHUNKED_PROCESSING': True,  # Process large files in chunks
+    'CHUNK_SIZE_PARAGRAPHS': 1000,  # Paragraphs per chunk
+    'MAX_MEMORY_USAGE_GB': 8,  # Memory limit before cleanup
     
-    # Feature extraction
-    'EXTRACT_ALL_FEATURES': True,
-    'FEATURE_CATEGORIES': ['all'],   # or specific categories
+    # Performance optimization
+    'ENABLE_MEMORY_MONITORING': True,  # Monitor memory usage
+    'MEMORY_CLEANUP_INTERVAL': 1000,  # Cleanup frequency
+    'CACHE_SIZE_LIMIT': 5000,  # spaCy cache limit
 }
 ```
 
-### 🎨 GUI Customization
+### 📐 Custom PHD Configuration
 
 ```python
-# GUI settings
-GUI_CONFIG = {
-    'WINDOW_SIZE': '1100x800',
-    'THEME': 'vista',              # Windows theme
-    'LOG_HEIGHT': 8,               # Log area height
-    'TREE_HEIGHT': 10,             # File list height
+# PHD-specific settings
+PHD_CONFIG = {
+    'PHD_ALPHA': 1.0,  # Alpha parameter for PHD computation
+    'PHD_N_RERUNS': 3,  # Number of computation restarts
+    'PHD_MIN_POINTS': 50,  # Minimum points for PHD calculation
+    'PHD_MAX_POINTS': 512,  # Maximum points for PHD calculation
+    'PHD_POINT_JUMP': 40,  # Step between subsamples
 }
 ```
 
-## 🔧 Advanced Usage
+## 📊 Output Format
 
-### 🧩 Adding Custom Features
+### Enhanced CSV Output
 
-Create custom feature extractors:
+The enhanced detector outputs comprehensive feature data:
 
-```python
-from features.base import safe_feature_extractor
+| Column | Description | Example |
+|--------|-------------|---------|
+| `paragraph` | Original text content | "This is sample text..." |
+| `file_path` | Source file path | "/path/to/file.txt" |
+| `label` | Human/AI label | "Human Written" |
+| `source` | Text source | "Human" |
+| `is_AI` | Binary classification | 0 |
+| `avg_sent_length_chars` | Average sentence length | 45.2 |
+| `flesch_reading_ease` | Readability score | 67.8 |
+| `type_token_ratio` | Lexical diversity | 0.234 |
+| **`ph_dimension`** | **Custom PHD value** | **1.23** |
+| **`ph_computation_success`** | **PHD success flag** | **1.0** |
+| ... | 119+ other features | ... |
 
-@safe_feature_extractor('custom_features', {
-    'my_metric': 0.0,
-    'another_metric': 0.0
-})
-def my_custom_features(text: str, doc) -> dict:
-    """Extract custom features from text."""
-    return {
-        'my_metric': len(text.split('custom_word')),
-        'another_metric': text.count('specific_pattern') / len(text)
-    }
-```
+### 📈 Enhanced Statistics
 
-### 📊 Batch Processing
+- **Processing Speed**: Files/paragraphs per second
+- **Memory Usage**: Real-time memory consumption
+- **Error Reporting**: Detailed failure analysis
+- **Feature Coverage**: Success rates for each feature extractor
 
-Process multiple files programmatically:
+## 🔬 Advanced Features
 
-```python
-from core.file_processing import batch_process_files
-from features import extract_all_features
+### 📐 Custom PHD Implementation
 
-file_paths = ['file1.txt', 'file2.txt', 'file3.txt']
-results = batch_process_files(file_paths)
-
-for result in results['successful']:
-    for paragraph in result['paragraphs']:
-        features = extract_all_features(paragraph)
-        # Process features...
-```
-
-### 🔍 Feature Selection
-
-Extract specific feature categories:
+The enhanced version includes the exact PHD (Persistent Homology Dimension) implementation from the GPTID project:
 
 ```python
-from features.linguistic import pos_frequency_features
-from features.lexical import lexical_diversity_features
+# Example: Extract PHD features
+from features.custom_phd import extract_phd_features
 
 text = "Your text here..."
-doc = get_doc_cached(text)
+phd_features = extract_phd_features(text, CONFIG)
 
-# Extract only specific features
-pos_features = pos_frequency_features(text, doc)
-lexical_features = lexical_diversity_features(text, doc)
+print(f"PHD Dimension: {phd_features['ph_dimension']:.6f}")
+print(f"Computation Success: {phd_features['ph_computation_success']}")
+```
+
+**PHD Features:**
+- `ph_dimension`: Primary PHD value
+- `ph_dimension_tfidf`: PHD from TF-IDF representation
+- `ph_dimension_embeddings`: PHD from sentence embeddings
+- `ph_valid`: Validity flag
+- `ph_point_cloud_size`: Size of point cloud used
+- `ph_computation_success`: Success indicator
+
+### 🧹 Custom Text Cleaning
+
+Advanced text cleaning with the exact implementation specified:
+
+```python
+# Example: Use custom text cleaning
+from core.text_cleaning import TextCleaner
+
+cleaner = TextCleaner(debug_mode=True)
+valid_paragraphs, stats = cleaner.clean_paragraphs(paragraphs, "source_file.txt")
+
+print(f"Valid paragraphs: {len(valid_paragraphs)}")
+print(f"Removal rate: {stats['invalid_paragraphs']/stats['total_paragraphs']*100:.1f}%")
+```
+
+**Cleaning Features:**
+- Bibliography and citation removal
+- Figure/table caption filtering
+- Code snippet detection
+- URL and email filtering
+- Mathematical equation removal
+- Section header detection
+- And 12+ other advanced filters
+
+### 🚀 Large File Processing
+
+```python
+# Example: Process large files efficiently
+from core.enhanced_file_processing import EnhancedFileProcessor
+
+processor = EnhancedFileProcessor(CONFIG)
+result = processor.process_file("large_file.txt", "Human Written", "Human")
+
+if result['success']:
+    print(f"Processed {len(result['paragraphs'])} paragraphs")
+    print(f"Processing time: {result['processing_time']:.2f} seconds")
+    print(f"Memory used: {result['memory_usage_mb']:.1f} MB")
+```
+
+## 🎯 Performance Optimization
+
+### 💾 Memory Management
+
+- **Automatic Cleanup**: Periodic garbage collection and cache clearing
+- **Chunked Processing**: Large files processed in memory-efficient chunks
+- **Memory Monitoring**: Real-time usage tracking with alerts
+- **Cache Optimization**: Intelligent spaCy document caching
+
+### ⚡ Speed Optimization
+
+- **Parallel Processing**: Multi-threaded feature extraction
+- **Batch Operations**: Efficient handling of multiple files
+- **Progress Tracking**: Real-time speed and ETA calculations
+- **Cancellation Support**: Clean shutdown for long operations
+
+### 📊 Monitoring Features
+
+```python
+# Real-time performance monitoring
+from core.enhanced_file_processing import MemoryMonitor
+
+monitor = MemoryMonitor(max_memory_gb=8)
+current_usage = monitor.get_memory_usage()  # Returns usage in GB
+
+if monitor.should_cleanup():
+    monitor.force_cleanup()  # Trigger garbage collection
+```
+
+## 🧪 Testing and Validation
+
+### 🔬 Built-in Tests
+
+```bash
+# Test all enhanced features
+python main.py --test-phd --test-cleaning
+
+# Validate configuration
+python -c "from config import validate_config; validate_config()"
+
+# Check feature extractors
+python main.py --info
+```
+
+### 📊 Performance Testing
+
+```bash
+# Test with large files
+python main.py --cli --files large_test_file.txt --output performance_test.csv
+
+# Monitor memory usage during processing
+python -c "
+from core.enhanced_file_processing import EnhancedFileProcessor
+import time
+processor = EnhancedFileProcessor()
+# Monitor processing...
+"
 ```
 
 ## 🐛 Troubleshooting
 
 ### Common Issues and Solutions
 
-#### 🔍 spaCy Model Not Found
-```bash
-# Problem: spacy.errors.OSError: [E050] Can't find model 'en_core_web_sm'
-# Solution:
-python -m spacy download en_core_web_sm
-
-# Verify installation:
-python -c "import spacy; nlp = spacy.load('en_core_web_sm'); print('Model loaded successfully!')"
-```
-
-#### 🖥️ GUI Issues on Linux
-```bash
-# Problem: tkinter not available
-# Solution:
-sudo apt-get install python3-tk          # Ubuntu/Debian
-sudo yum install tkinter                  # RHEL/CentOS
-sudo pacman -S tk                         # Arch Linux
-```
-
-#### 💾 Memory Issues
+#### Memory Issues
 ```python
-# Problem: Out of memory with large files
-# Solutions:
-# 1. Reduce cache size in config.py
-CONFIG['CACHE_SIZE_LIMIT'] = 500
-
-# 2. Process files in smaller batches
-# 3. Increase system memory
-# 4. Use file size limits
-CONFIG['MAX_FILE_SIZE_MB'] = 50
-```
-
-#### 📁 File Processing Errors
-```python
-# Problem: PDF/DOCX files not processing
-# Solution: Install optional dependencies
-pip install PyPDF2 python-docx pandas
-
-# Problem: Encoding issues with text files
-# Solution: Files are automatically tried with multiple encodings
-# UTF-8, Latin-1, and CP1252 are supported
-```
-
-### 📋 Debug Mode
-
-Enable detailed logging:
-
-```python
-# In config.py
-CONFIG['LOG_LEVEL'] = 'DEBUG'
-
-# Or set environment variable
-export LOG_LEVEL=DEBUG
-python main.py
-```
-
-### 📊 Performance Optimization
-
-```python
-# Optimize for large-scale processing
+# Reduce memory usage
 CONFIG.update({
-    'CACHE_SIZE_LIMIT': 5000,      # Larger cache
-    'PROCESSING_THREADS': 4,        # Parallel processing
-    'BATCH_SIZE': 100,              # Process in batches
+    'CHUNK_SIZE_PARAGRAPHS': 500,  # Smaller chunks
+    'MAX_MEMORY_USAGE_GB': 4,  # Lower limit
+    'CACHE_SIZE_LIMIT': 1000,  # Smaller cache
 })
 ```
 
-## 🧪 Testing
-
-### Run Tests
-
-```bash
-# Install test dependencies
-pip install pytest pytest-cov
-
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test category
-pytest tests/test_features.py
-pytest tests/test_gui.py
+#### Performance Issues
+```python
+# Optimize for speed
+CONFIG.update({
+    'CHUNK_SIZE_PARAGRAPHS': 2000,  # Larger chunks
+    'MEMORY_CLEANUP_INTERVAL': 2000,  # Less frequent cleanup
+    'CACHE_SIZE_LIMIT': 10000,  # Larger cache
+})
 ```
 
-### Test Data
+#### File Processing Errors
+- Check file encoding (automatic detection included)
+- Verify file permissions and accessibility
+- Review error logs for specific issues
+- Use chunked processing for very large files
 
-Create test files in `tests/data/`:
+## 📚 API Reference
+
+### Core Classes
+
+```python
+# Enhanced File Processor
+from core.enhanced_file_processing import EnhancedFileProcessor
+processor = EnhancedFileProcessor(config)
+
+# Custom Text Cleaner
+from core.text_cleaning import TextCleaner
+cleaner = TextCleaner(debug_mode=True)
+
+# Memory Monitor
+from core.enhanced_file_processing import MemoryMonitor
+monitor = MemoryMonitor(max_memory_gb=8)
 ```
-tests/
-├── data/
-│   ├── sample_ai.txt
-│   ├── sample_human.txt
-│   ├── test.csv
-│   └── test.docx
-├── test_core.py
-├── test_features.py
-└── test_gui.py
+
+### Feature Extraction
+
+```python
+# Extract all features
+from features import extract_all_features
+features = extract_all_features(text, config)
+
+# Extract custom PHD features
+from features.custom_phd import custom_phd_features
+phd_features = custom_phd_features(text, doc, config)
+
+# Batch processing
+from features import extract_features_batch
+results = extract_features_batch(paragraphs, config)
 ```
 
 ## 🤝 Contributing
 
 We welcome contributions! Here's how to get started:
 
-### 🔧 Development Setup
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** following the existing code style
+4. **Add tests** for new functionality
+5. **Run the test suite**: `python -m pytest`
+6. **Commit your changes**: `git commit -m "Add amazing feature"`
+7. **Push to the branch**: `git push origin feature/amazing-feature`
+8. **Create a Pull Request**
 
-```bash
-# 1. Fork and clone the repository
-git clone https://github.com/your-username/Project.git
-cd Project
+### Development Guidelines
 
-# 2. Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+- Follow PEP 8 style guidelines
+- Add comprehensive docstrings
+- Include unit tests for new features
+- Update documentation as needed
+- Test with large files to ensure memory efficiency
 
-# 3. Install development dependencies
-pip install -r requirements.txt
-pip install pytest black flake8 mypy
+## 📋 Roadmap
 
-# 4. Install pre-commit hooks (optional)
-pip install pre-commit
-pre-commit install
-```
+### Planned Enhancements
 
-### 📝 Development Workflow
+- **🌐 Web Interface**: Browser-based processing interface
+- **🔌 Plugin System**: Custom feature extractor plugins
+- **📊 Advanced Visualization**: Interactive result dashboards
+- **🤖 ML Model Integration**: Built-in classification models
+- **☁️ Cloud Processing**: Distributed processing support
+- **🔗 API Endpoints**: RESTful API for integration
 
-```bash
-# 1. Create a feature branch
-git checkout -b feature/amazing-feature
+### Future Features
 
-# 2. Make your changes
-# ... edit files ...
-
-# 3. Run tests
-pytest
-
-# 4. Format code
-black .
-
-# 5. Check style
-flake8
-
-# 6. Type check
-mypy .
-
-# 7. Commit and push
-git add .
-git commit -m "Add amazing feature"
-git push origin feature/amazing-feature
-
-# 8. Create Pull Request
-```
-
-### 🎯 Contribution Guidelines
-
-- **Code Style**: Follow PEP 8, use Black formatter
-- **Documentation**: Update README and docstrings
-- **Tests**: Add tests for new features
-- **Commits**: Use clear, descriptive commit messages
-- **Issues**: Check existing issues before creating new ones
-
-### 🔧 Areas for Contribution
-
-- 🆕 **New Features**: Additional linguistic features
-- 🐛 **Bug Fixes**: Fix reported issues
-- 📖 **Documentation**: Improve README, add examples
-- 🧪 **Testing**: Increase test coverage
-- 🎨 **GUI**: Enhance user interface
-- ⚡ **Performance**: Optimize processing speed
+- **Multi-language Support**: Processing for non-English texts
+- **Real-time Processing**: Stream processing capabilities
+- **Advanced Analytics**: Statistical analysis tools
+- **Export Formats**: Additional output formats (JSON, Excel, etc.)
+- **Database Integration**: Direct database connectivity
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### MIT License Summary
-- ✅ Commercial use
-- ✅ Modification
-- ✅ Distribution
-- ✅ Private use
-- ❌ Liability
-- ❌ Warranty
+### Acknowledgments
 
-## 🙏 Acknowledgments
+- **Original AI-Generated Text Detector** by MohamedMady19
+- **Custom Text Cleaning** implementation as specified
+- **PHD Implementation** from GPTID project
+- **spaCy** for industrial-strength NLP
+- **TextBlob** for simplified text processing
+- **NumPy & SciPy** for scientific computing
 
-- **[spaCy](https://spacy.io/)** - Industrial-strength NLP
-- **[TextBlob](https://textblob.readthedocs.io/)** - Simplified text processing
-- **[textstat](https://github.com/textstat/textstat)** - Text readability metrics
-- **[NumPy](https://numpy.org/)** & **[SciPy](https://scipy.org/)** - Scientific computing
-- **Research Community** - Linguistic feature insights and methodologies
+## 📞 Support
 
-## 📈 Citation
+### Getting Help
 
-If you use this tool in your research, please cite:
+1. **📖 Documentation**: Check this README and setup guide
+2. **🐛 Issues**: Report bugs on GitHub Issues
+3. **💬 Discussions**: Join GitHub Discussions for questions
+4. **📧 Email**: Contact for technical support
 
-```bibtex
-@software{project_text_feature_extractor,
-  title={Project - AI Text Feature Extractor},
-  author={AI Text Analysis Team},
-  year={2024},
-  url={https://github.com/your-username/Project},
-  version={2.0.0},
-  note={A comprehensive tool for extracting linguistic features from text}
-}
-```
+### Resources
 
-## 📞 Support & Contact
-
-- **🐛 Issues**: [GitHub Issues](https://github.com/your-username/Project/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/your-username/Project/discussions)
-- **📧 Email**: team@textanalysis.com
-- **📖 Documentation**: [Wiki](https://github.com/your-username/Project/wiki)
-
-### 🆘 Getting Help
-
-1. **Check the troubleshooting section** above
-2. **Search existing issues** on GitHub
-3. **Create a new issue** with:
-   - Operating system and Python version
-   - Error messages and logs
-   - Steps to reproduce the problem
-   - Expected vs actual behavior
-
-## 🗺️ Roadmap
-
-### 🔮 Planned Features
-
-- **v2.1.0**
-  - 🌐 Multi-language support
-  - 📊 Advanced visualization dashboard
-  - 🔌 Plugin system for custom features
-
-- **v2.2.0**
-  - 🤖 Machine learning model integration
-  - 📈 Statistical analysis tools
-  - 🔄 Batch processing optimization
-
-- **v3.0.0**
-  - 🌐 Web interface
-  - 🔗 API endpoints
-  - ☁️ Cloud processing support
+- **📚 Setup Guide**: [SETUP_GUIDE.md](SETUP_GUIDE.md)
+- **🔧 Configuration**: [config.py](config.py)
+- **📊 Feature Documentation**: [features/README.md](features/README.md)
+- **🧪 Testing**: [tests/README.md](tests/README.md)
 
 ---
 
-**Made with ❤️ by the AI Text Analysis Team**
+**Made with ❤️ by the Enhanced AI Text Analysis Team**
 
-*Project v2.0 - Empowering researchers and developers to distinguish AI-generated from human-written text through comprehensive linguistic analysis.*
+*Empowering researchers and developers to distinguish AI-generated from human-written text through comprehensive linguistic analysis with advanced large-file processing capabilities.*
