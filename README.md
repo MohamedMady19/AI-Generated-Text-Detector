@@ -2,6 +2,16 @@
 
 A comprehensive tool for extracting linguistic features from text files to help distinguish between AI-generated and human-written content, with advanced support for large files and custom feature implementations.
 
+**At a glance:** 119+ linguistic and topological features per text (lexical diversity, part-of-speech, syntactic complexity, readability, discourse markers, n-gram repetition, persistent-homology dimension), written to CSV for analysis or for training a classifier. Graphical interface or command line; files up to 1 GB.
+
+```bash
+git clone https://github.com/MohamedMady19/AI-Generated-Text-Detector.git && cd AI-Generated-Text-Detector
+pip install -r requirements.txt && python -m spacy download en_core_web_sm
+python main.py --cli --files document.txt --output features.csv
+```
+
+Part of my PhD research on detecting AI-generated content at the [Smart Embedded Systems Lab](https://github.com/SES-Lab-OTH) (OTH Regensburg / TUM); see also [DeBERTa-ConPara](https://github.com/SES-Lab-OTH/deberta-conpara) (AACL-IJCNLP 2026). If the tool is useful to you, a star helps others find it.
+
 ## 🚀 New Enhanced Features
 
 ### ✨ Major Improvements
